@@ -18,5 +18,9 @@
 SECTION "Entry point", ROM0[$150]
 
 main::
+
+   ld a, 1
+
+
    di     ;; Disable Interrupts
    halt   ;; Halt the CPU (stop procesing here)
