@@ -5,42 +5,45 @@
 
 ; --- Hardware Registers ---
 SECTION "Hardware", ROM0
-def rLCDC   EQU $FF40
-def rSTAT   EQU $FF41
-def rSCY    EQU $FF42
-def rSCX    EQU $FF43
-def rLY     EQU $FF44
-def rBGP    EQU $FF47
-def rP1     EQU $FF00
+DEF rLCDC   equ $FF40
+DEF rSTAT   equ $FF41
+DEF rSCY    equ $FF42
+DEF rSCX    equ $FF43
+DEF rLY     equ $FF44
+DEF rBGP    equ $FF47
+DEF rP1     equ $FF00
 
 ; --- Constantes del juego ---
-def SNAKE_MAX_LENGTH    EQU 100     ; Longitud máxima de la serpiente
-def TILE_SIZE           EQU 8       ; Tamaño de cada tile en píxeles
-def MAP_WIDTH           EQU 20      ; Ancho del mapa en tiles
-def MAP_HEIGHT          EQU 18      ; Alto del mapa en tiles
-def INITIAL_LENGTH      EQU 3       ; Longitud inicial de la serpiente
-def FRAME_DELAY         EQU 8       ; Frames de delay entre movimientos
+DEF SNAKE_MAX_LENGTH    equ 100     ; Longitud máxima de la serpiente
+DEF TILE_SIZE           equ 8       ; Tamaño de cada tile en píxeles
+DEF MAP_WIDTH           equ 20      ; Ancho del mapa en tiles
+DEF MAP_HEIGHT          equ 18      ; Alto del mapa en tiles
+DEF INITIAL_LENGTH      equ 3       ; Longitud inicial de la serpiente
+DEF FRAME_DELAY         equ 8       ; Frames de delay entre movimientos
 
 ; --- Direcciones ---
-def DIR_RIGHT   EQU 0
-def DIR_LEFT    EQU 1
-def DIR_UP      EQU 2
-def DIR_DOWN    EQU 3
+DEF DIR_RIGHT   equ 0
+DEF DIR_LEFT    equ 1
+DEF DIR_UP      equ 2
+DEF DIR_DOWN    equ 3
 
 ; --- Tiles ---
-def TILE_EMPTY      EQU 0
-def TILE_SNAKE_HEAD EQU 1
-def TILE_SNAKE_BODY EQU 2
-def TILE_FRUIT      EQU 3
-def TILE_WALL       EQU 4
+DEF TILE_EMPTY      equ 0
+DEF TILE_SNAKE_HEAD equ 1
+DEF TILE_SNAKE_BODY equ 2
+DEF TILE_FRUIT      equ 3
+DEF TILE_WALL       equ 4
 
 ; --- Teclas (P1 register bits) ---
-def KEY_RIGHT   EQU %00000001
-def KEY_LEFT    EQU %00000010
-def KEY_UP      EQU %00000100
-def KEY_DOWN    EQU %00001000
-def KEY_A       EQU %00010000
-def KEY_B       EQU %00100000
+DEF SELECT_PAD		equ $10
+DEF SELECT_BUTTONS	equ $20
+DEF SELECT_NONE		equ $30
+DEF KEY_RIGHT   	equ %00000001
+DEF KEY_LEFT    	equ %00000010
+DEF KEY_UP      	equ %00000100
+DEF KEY_DOWN    	equ %00001000
+DEF KEY_A       	equ %00010000
+DEF KEY_B       	equ %00100000
 
 ; --- Variables en WRAM ---
 SECTION "GameVars", WRAM0

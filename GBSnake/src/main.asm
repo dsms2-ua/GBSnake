@@ -4,11 +4,11 @@
 ; ============================================
 
 INCLUDE "definitions.inc"
-INCLUDE "logic.asm"
-INCLUDE "collision.asm"
-INCLUDE "fruit.asm"
-INCLUDE "input.asm"
-INCLUDE "render.asm"
+;; INCLUDE "logic.asm"
+;; INCLUDE "collision.asm"
+;; INCLUDE "fruit.asm"
+;; INCLUDE "input.asm"
+;; INCLUDE "render.asm"
 
 SECTION "Header", ROM0[$100]
     nop

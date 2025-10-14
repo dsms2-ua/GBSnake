@@ -1,0 +1,1 @@
+;; Aquí cargamos la intro (Serpiente comiéndose el logo) para después pasar al menú

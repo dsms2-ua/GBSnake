@@ -2,14 +2,14 @@
 ; INPUT HANDLING - input.asm
 ; Lectura y procesamiento de controles
 ; ============================================
-SECTION "InputVars", R0M0
-wP1Input: DS 1              ; Estado actual del input
+SECTION "InputVars", ROM0
+wP1Input:: DS 1              ; Estado actual del input
 
 ; ============================================
 ; READ INPUT
 ; Lee el estado de los botones y actualiza dirección
 ; ============================================
-ReadInput:
+ReadInput::
     ; Leer botones direccionales
     ld a, $20               ; Seleccionar D-pad
     ld [rP1], a
@@ -44,7 +44,7 @@ ReadInput:
 ; PROCESS INPUT
 ; Procesa el input y actualiza la dirección
 ; ============================================
-ProcessInput:
+ProcessInput::
     ld a, [wP1Input]
     
     ; Verificar RIGHT
