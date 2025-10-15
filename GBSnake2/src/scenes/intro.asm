@@ -2,9 +2,15 @@
 INCLUDE "constants.inc"
 
 SECTION "Intro Sprites", WRAM0[$C000]
-IntroOAMBuffer:: DS 160
+IntroOAMBuffer:: DS 24
+
+SECTION "Intro Variables", WRAM0
+IntroSnakeCounter:: DS 1
+IntroSnakeSpeed:: DS 1
+CounterIterations:: DS 1
 
 SECTION "Intro Code", ROM0
+;; Reservamos "variables" para controlar la velocidad
 
 intro_init::
 	;; Power off LCDC screen to load tiles and map
@@ -26,11 +32,19 @@ intro_init::
 
 	;; Power on LCDC screen
 	call enciende_pantalla
+
+	;; Initialise variables
+	ld a, 3
+	ld [IntroSnakeSpeed], a
+	xor a
+	ld [IntroSnakeCounter], a
+	ld a, 34
+	ld [CounterIterations], a
 	ret
 
 intro_run::
 .drawSnake::
-	;; ACtualizamos la OAM
+	;; Actualizamos la OAM
 	call wait_vblank_start
 	call copy_OAM_buffer
 
@@ -47,7 +61,9 @@ intro_run::
 	call copy_OAM_buffer
 
 	;; Comprove if animation is finished
-	jp .movement
+	ld a, [CounterIterations]
+	cp 0
+	jr nz, .movement
 
 	;; Now a message is displayed to press Start
 	call show_message_intro
