@@ -43,6 +43,12 @@ intro_init::
 	ld bc, 27*VRAM_TILE_SIZE
 	call copy_vram
 
+	;; Load logo tiles
+	ld hl, logo_assets
+	ld de, $8400
+	ld bc, 28*VRAM_TILE_SIZE
+	call copy_vram
+
 	call init_sprites_intro
 
 	;; Power on LCDC screen
@@ -79,6 +85,9 @@ intro_run::
 	ld a, [CounterIterations]
 	cp 0
 	jr nz, .movement
+
+	;; We load the logo
+	call show_logo
 
 	;; Now a message is displayed to press Start
 	call show_message_intro
