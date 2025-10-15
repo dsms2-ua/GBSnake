@@ -17,8 +17,9 @@ ge_init::
 	call wait_vblank_start
 	call init_oam
 
-	;; Enable Objects in rLCDC
+	;; Enable Objects and Window in rLCDC
 	ld hl, rLCDC
 	set 1, [hl]
+	set 5, [hl]
 
 	ret

@@ -178,12 +178,22 @@ copy_OAM_buffer::
 	ret
 
 show_message_intro::
+	ld hl, TextPress
+	ld de, $9988
+	ld bc, TextPressEnd - TextPress
+	call copy_vram
+
+	ld hl, TextStart
+	ld de, $99C8
+	ld bc, TextStartEnd - TextStart
+	call copy_vram
 	ret
 
-wait_Start::
+wait_start::
+	call read_joypad
 	ld a, [JoyPadState]
 	bit 3, a
-	jr z, wait_Start
+	jr z, wait_start
 	ret
 
 ;; ---------------

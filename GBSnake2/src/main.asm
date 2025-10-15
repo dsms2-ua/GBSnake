@@ -6,5 +6,8 @@ main::
    call intro_init
    call intro_run
 
+   call game_init
+   ;; call game_run
+
    di     ;; Disable Interrupts
    halt   ;; Halt the CPU (stop procesing here)

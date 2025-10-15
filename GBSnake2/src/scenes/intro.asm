@@ -10,7 +10,14 @@ IntroSnakeSpeed:: DS 1
 CounterIterations:: DS 1
 
 SECTION "Intro Code", ROM0
-;; Reservamos "variables" para controlar la velocidad
+
+TextPress::
+	DB $8F, $91, $84, $92, $92
+TextPressEnd::
+
+TextStart::
+	DB $92, $93, $80, $91, $93
+TextStartEnd::
 
 intro_init::
 	;; Power off LCDC screen to load tiles and map
@@ -25,8 +32,8 @@ intro_init::
 	;; Load letters and numbers tiles
 	ld hl, abecedario
 	ld de, VRAM_FONT_DATA_START ;; $8800
-	ld b, 27*VRAM_TILE_SIZE
-	call memcpy_256
+	ld bc, 27*VRAM_TILE_SIZE
+	call copy_vram
 
 	call init_sprites_intro
 
@@ -69,6 +76,6 @@ intro_run::
 	call show_message_intro
 
 	;; Waits until Start is pressed
-	call wait_Start
+	call wait_start
 
 	ret

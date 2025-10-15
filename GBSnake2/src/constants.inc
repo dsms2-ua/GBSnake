@@ -58,12 +58,14 @@ DEF TILE_WALL       		equ 4
 DEF SELECT_PAD				equ $10
 DEF SELECT_BUTTONS			equ $20
 DEF SELECT_NONE				equ $30
-DEF KEY_RIGHT   			equ %00000001
-DEF KEY_LEFT    			equ %00000010
-DEF KEY_UP      			equ %00000100
-DEF KEY_DOWN    			equ %00001000
-DEF KEY_A       			equ %00010000
-DEF KEY_B       			equ %00100000
+DEF KEY_RIGHT   			equ 4
+DEF KEY_LEFT    			equ 5
+DEF KEY_DOWN    			equ 6
+DEF KEY_UP      			equ 7
+DEF KEY_A       			equ 0
+DEF KEY_B       			equ 1
+DEF KEY_SELECT				equ 2
+DEF KEY_START				equ 3
 
 ; --- Variables en WRAM ---
 ;;SECTION "GameVars", WRAM0

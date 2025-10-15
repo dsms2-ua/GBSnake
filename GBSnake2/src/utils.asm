@@ -28,6 +28,23 @@ memcpy_256::
 	ret
 
 ;; ------------------
+;; Allows copying more than 256 bytes
+;; INPUT
+;; 		HL => Source
+;; 		DE => Destination
+;; 		BC => Bytes
+copy_vram::
+	.copy_loop:
+		ld a, [hl+]
+		ld [de], a
+		inc de
+		dec bc
+		ld a, b
+		or c
+	jr nz, .copy_loop
+	ret
+
+;; ------------------
 ;; Copy the map to the desired position
 ;; INPUT
 ;; 		HL => Primer tile del mapa
@@ -107,7 +124,6 @@ read_joypad::
 	ld a, [rP1]
 	ld a, [rP1] ;; Leemos 3 veces por hardware
 	and %00001111
-	swap a ;; Los movemos a los bits de arriba
 	ld b, a
 
 	ld a, SELECT_BUTTONS
@@ -116,11 +132,13 @@ read_joypad::
 	ld a, [rP1]
 	ld a, [rP1] ;; Leemos 3 veces por hardware
 	and %00001111
-	or b ;; Combinamos con los bits de dirección
 
-	cpl 
+	swap b
+	or b
+	cpl
+	ld [JoyPadState], a 
 
-	ld [JoyPadState], a
 	ld a, SELECT_NONE ;; Reseteamos la selección
 	ld [rP1], a
+	
 	ret
