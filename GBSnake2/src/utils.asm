@@ -1,4 +1,4 @@
-INCLUDE "definitions.inc"
+INCLUDE "constants.inc"
 
 SECTION "Utils", ROM0
 
@@ -17,7 +17,7 @@ wait_vblank_start::
 ;; INPUT
 ;; 		HL: Source
 ;; 		DE: Destination
-;;  	 B: bytes
+;;  	 	 B: bytes
 ;;
 memcpy_256::
 		ld a, [hl+]
@@ -32,8 +32,8 @@ memcpy_256::
 ;; INPUT
 ;; 		HL => Primer tile del mapa
 ;; 		DE => Posición destino
-copyMap::
-	ld b, MAP1_WIDTH
+copy_map::
+	ld b, MAP_WIDTH
 	.copy_tile:
 		ld a, [hl+]
 		ld [de], a
@@ -43,13 +43,13 @@ copyMap::
 
 		;; Aquí saltas los tiles restantes
 		ld a, e
-		add a, 32 - MAP1_WIDTH
+		add a, 32 - MAP_WIDTH
 		ld e, a
 		jr nc, .no_carry
 		inc d
 	.no_carry:
 		dec c
-		jr nz, copyMap
+		jr nz, copy_map
 
 ;; ------------------
 ;; Set bytes (256 as maximum)
@@ -64,13 +64,21 @@ memset_256::
 	ret
 
 ;; ------------------
-;; Power offs the LCD screen before loading maps or tiles to VRAM
+;; Powers off the LCD screen before loading maps or tiles to VRAM
 apaga_pantalla::
 	di
 	call wait_vblank_start
-	ld hl, rLCDC
-	rst 7, [hl]
+	ld a, [rLCDC]
+	res 7, a
+	ld [rLCDC], a
 	ei
+	ret
+
+;; ------------------
+;; Powers on the LCD screen
+enciende_pantalla::
+	ld hl, rLCDC
+	set 7, [hl]
 	ret
 
 ;; ------------------
@@ -89,11 +97,11 @@ clear_tiles_screen::
 ;; Reads buttons state in possitive logic (1 = pressed)
 ;; OUTPUT
 ;; 		JoyPadState => State of buttons
-;;						 UDLR  AB						
-;;						%xxxxxxxx
+;;						 		 UDLR  AB						
+;;								%xxxxxxxx
 read_joypad::
 	;; Primero leemos el JoyPad
-	ld a, SELECT_JOYPAD
+	ld a, SELECT_PAD
 	ld [rP1], a
 	ld a, [rP1]
 	ld a, [rP1]

@@ -1,4 +1,4 @@
-; MAP.INC
+; INTRO.INC
 ;
 ; Map Include File.
 ;
@@ -20,4 +20,4 @@ mapBank   EQU 0
 
  GLOBAL map
 
-; End of MAP.INC
+; End of INTRO.INC

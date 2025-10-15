@@ -1,4 +1,4 @@
-; MAP.INC
+; MAPINTRO.INC
 ;
 ; Map Include File.
 ;
@@ -6,7 +6,7 @@
 ;   Section       : map
 ;   Bank          : 0
 ;   Map size      : 20 x 16
-;   Tile set      : tileset.gbr
+;   Tile set      : Z:\home\cpc\Escritorio\GBSnake\GBSnake2\tiles\tileset.gbr
 ;   Plane count   : 1 plane (8 bits)
 ;   Plane order   : Tiles are continues
 ;   Tile offset   : 0
@@ -20,4 +20,4 @@ mapBank   EQU 0
 
  GLOBAL map
 
-; End of MAP.INC
+; End of MAPINTRO.INC
