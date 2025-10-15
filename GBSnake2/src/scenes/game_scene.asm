@@ -15,6 +15,12 @@ game_init::
 	ld bc, 26*VRAM_TILE_SIZE
 	call copy_vram
 
+	;; Limpiamos los tiles del logo
+	ld hl, $8400
+	ld a, $00
+	ld bc, 28*VRAM_TILE_SIZE
+	call memset
+
 	;; Load game map
 	ld hl, mapGame
 	ld de, BGMAP0_START

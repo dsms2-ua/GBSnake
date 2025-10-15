@@ -178,6 +178,35 @@ copy_OAM_buffer::
 	call memcpy_256
 	ret
 
+;; ;; ------------------
+;; Allows copying more than 256 bytes
+;; INPUT
+;; 		C => Tile to copy
+;; 		DE => Destination
+;; 		B => Bytes
+load_tiles_screen::
+		ld a, c
+		ld [de], a
+		inc de
+		inc c
+		dec b
+	jr nz, load_tiles_screen
+	ret
+
+show_logo::
+	ld c, $40
+	ld de, $9904
+	ld b, 14
+	call load_tiles_screen
+
+
+	ld c, $4E
+	ld de, $9924
+	ld b, 14
+	call load_tiles_screen
+
+	ret
+
 show_message_intro::
 	ld hl, TextPress
 	ld de, $9988
