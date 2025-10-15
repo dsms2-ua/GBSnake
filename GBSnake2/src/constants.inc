@@ -24,7 +24,7 @@ DEF OAM_SIZE				equ 160
 DEF rDMA 					equ $FF46
 
 ;; --- Map ---
-DEF BGMAP0					equ $9800
+DEF BGMAP0_START			equ $9800
 DEF BGMAP1_START			equ $9C00
 DEF MAP_HEIGHT				equ 16
 DEF MAP_WIDTH				equ 20
@@ -58,14 +58,14 @@ DEF TILE_WALL       		equ 4
 DEF SELECT_PAD				equ $10
 DEF SELECT_BUTTONS			equ $20
 DEF SELECT_NONE				equ $30
-DEF KEY_RIGHT   			equ 4
-DEF KEY_LEFT    			equ 5
-DEF KEY_DOWN    			equ 6
-DEF KEY_UP      			equ 7
-DEF KEY_A       			equ 0
-DEF KEY_B       			equ 1
-DEF KEY_SELECT				equ 2
-DEF KEY_START				equ 3
+DEF KEY_RIGHT   			equ 0
+DEF KEY_LEFT    			equ 1
+DEF KEY_DOWN    			equ 2
+DEF KEY_UP      			equ 3
+DEF KEY_A       			equ 4
+DEF KEY_B       			equ 5
+DEF KEY_SELECT				equ 6
+DEF KEY_START				equ 7
 
 ; --- Variables en WRAM ---
 ;;SECTION "GameVars", WRAM0

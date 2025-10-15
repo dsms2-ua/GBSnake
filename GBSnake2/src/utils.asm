@@ -81,6 +81,23 @@ memset_256::
 	ret
 
 ;; ------------------
+;; Set bytes
+;; INPUT
+;; 	 HL: Destination
+;;  	 BC: Bytes
+;;  	 A: Value to set
+memset::
+	.set_loop:
+		ld [hl+], a
+		ld d, a
+		dec bc
+		ld a, b
+		or c
+		ld a, d
+	jr nz, .set_loop
+	ret
+
+;; ------------------
 ;; Powers off the LCD screen before loading maps or tiles to VRAM
 apaga_pantalla::
 	di
@@ -140,5 +157,5 @@ read_joypad::
 
 	ld a, SELECT_NONE ;; Reseteamos la selección
 	ld [rP1], a
-	
+
 	ret

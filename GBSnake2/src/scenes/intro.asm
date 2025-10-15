@@ -79,3 +79,14 @@ intro_run::
 	call wait_start
 
 	ret
+
+intro_clean::
+	call apaga_pantalla
+
+	;; Limpiamos la window
+	call clean_window_intro
+
+	;; Limpiamos los sprites
+	call init_oam
+	
+	ret

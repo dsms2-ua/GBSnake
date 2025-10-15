@@ -1,7 +1,7 @@
 INCLUDE "constants.inc"
 
 ;; --- Auxiliar functions ---
-SECTION "Utils Scenes", ROM0
+SECTION "Utils Scenes Intro", ROM0
 
 init_sprites_intro::
 	ld hl, IntroOAMBuffer
@@ -192,7 +192,7 @@ show_message_intro::
 wait_start::
 	call read_joypad
 	ld a, [JoyPadState]
-	bit 3, a
+	bit KEY_START, a
 	jr z, wait_start
 	ret
 
@@ -203,4 +203,19 @@ wait_start::
 set_tile_to_0:
 	ld a, $00
 	ld [hl], a
+	ret
+
+;; ---------------
+;; Clean window values of the message
+clean_window_intro::
+	ld hl, $9988
+	ld b, 5
+	ld a, $00
+	call memset_256
+
+	ld hl, $99C8
+	ld b, 5
+	ld a, $00
+	call memset_256
+
 	ret

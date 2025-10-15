@@ -5,6 +5,7 @@ main::
    call ge_init
    call intro_init
    call intro_run
+   call intro_clean
 
    call game_init
    ;; call game_run
