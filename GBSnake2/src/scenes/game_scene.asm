@@ -22,11 +22,13 @@ game_init::
 	call copy_map
 
 	;; Configuramos el LCDC para mostrar el mapa 1
-	ld a, %10110011
+	ld a, %10010011
 	ld [rLCDC], a
 
-	call show_message_game
-
 	call enciende_pantalla
+
+	call wait_vblank_start
+
+	call show_message_game
 
 	ret

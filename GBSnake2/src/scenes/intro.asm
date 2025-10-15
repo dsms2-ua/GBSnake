@@ -19,6 +19,14 @@ TextStart::
 	DB $92, $93, $80, $91, $93
 TextStartEnd::
 
+TextBy::
+	DB $81, $98
+TextByEnd::
+
+TextBitBandits::
+	DB $81, $88, $93, $81, $80, $8D, $83, $88, $93, $92, $9A
+TextBitBanditsEnd::
+
 intro_init::
 	;; Power off LCDC screen to load tiles and map
 	call apaga_pantalla

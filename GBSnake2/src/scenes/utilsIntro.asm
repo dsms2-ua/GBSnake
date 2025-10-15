@@ -159,6 +159,7 @@ update_logo_intro::
 
 	ld hl, $9920
 	ld a, c
+	inc a
 	ld d, 0
 	ld e, a
 	add hl, de
@@ -184,9 +185,20 @@ show_message_intro::
 	call copy_vram
 
 	ld hl, TextStart
-	ld de, $99C8
+	ld de, $99A8
 	ld bc, TextStartEnd - TextStart
 	call copy_vram
+
+	ld hl, TextBy
+	ld de, $9812
+	ld bc, TextByEnd - TextBy
+	call copy_vram
+
+	ld hl, TextBitBandits
+	ld de, $9829
+	ld bc, TextBitBanditsEnd - TextBitBandits
+	call copy_vram
+
 	ret
 
 wait_start::
