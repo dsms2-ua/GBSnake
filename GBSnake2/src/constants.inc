@@ -14,6 +14,9 @@ DEF rSCX    				equ $FF43
 DEF rLY     				equ $FF44
 DEF rBGP    				equ $FF47
 DEF rP1     				equ $FF00
+DEF rIE                     equ $FFFF
+DEF rDIV                    equ $FF04
+DEF DPAD                    equ %00100000
 
 ;; --- Graphical Part ---
 DEF DEFAULT_PAL 			equ %11100100
@@ -48,10 +51,25 @@ DEF DIR_UP      			equ 2
 DEF DIR_DOWN    			equ 3
 
 ; --- Tiles ---
-DEF TILE_EMPTY      		equ 0
-DEF TILE_SNAKE_HEAD 		equ 1
-DEF TILE_SNAKE_BODY 		equ 2
-DEF TILE_FRUIT      		equ 3
+DEF TILE_EMPTY      		equ $00
+
+; --- Tiles de la Cabeza ---
+DEF TILE_HEAD_U     EQU $02
+DEF TILE_HEAD_R     EQU $03
+DEF TILE_HEAD_D     EQU $04
+DEF TILE_HEAD_L     EQU $05
+
+; --- Tiles del Cuerpo ---
+DEF TILE_BODY_VERT  EQU $06 ; Vertical (arriba-abajo)
+DEF TILE_BODY_HORIZ EQU $07 ; Horizontal (izq-der)
+
+; --- Tiles de las Esquinas ---
+DEF TILE_CORNER_UR  EQU $08 ; Arriba-Derecha
+DEF TILE_CORNER_DR  EQU $09 ; Abajo-Derecha
+DEF TILE_CORNER_DL  EQU $0A ; Abajo-Izquierda
+DEF TILE_CORNER_LU  EQU $0B ; Izquierda-Arriba
+
+DEF TILE_FRUIT      		equ $11
 DEF TILE_WALL       		equ 4
 
 ; --- Teclas (P1 register bits) ---
