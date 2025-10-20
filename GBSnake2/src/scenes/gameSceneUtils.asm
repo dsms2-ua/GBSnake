@@ -196,7 +196,13 @@ MoveSnake:
     inc [hl] ; DERECHA
 
 .head_updated_move:
-    ; Dibujamos la cabeza correcta según la dirección
+    ; Comprobamos si la nueva posición de la cabeza choca
+    ; con algo antes de dibujarla.
+    call CheckAllCollisions
+    jr c, .collision_happened ; Si Carry = 1 (colisión), saltamos a GameOver
+
+    ; Si no hay colisión (Carry = 0), continuamos dibujando la cabeza...
+
     ld a, [SnakeDirection]
     cp 0
     jr nz, .draw_head_r
@@ -225,6 +231,10 @@ MoveSnake:
     call DrawTileAt
 
     ret
+
+.collision_happened:
+    ; Si hemos llegado aquí, hubo una colisión.
+    jp GameOver ; Saltamos a la rutina de fin de juego
 
 UpdateNeckTile:
     ; Esta rutina determina qué tile de cuerpo/esquina poner en la posición
@@ -467,3 +477,106 @@ CheckForFood:
     ; 2. Generamos una nueva pieza de comida
     call SpawnFood
     ret
+
+; ==============================================================================
+; CheckAllCollisions
+; Comprueba si la cabeza de la serpiente choca con las paredes o
+; con su propio cuerpo.
+; Salida:
+;   Flag Carry (CF) = 1 si hay colisión, 0 si no.
+; ==============================================================================
+CheckAllCollisions:
+    ; --- 1. Cargar coordenadas de la cabeza ---
+    ld a, [SnakeCoordsX]
+    ld e, a ; E = HeadX
+    ld a, [SnakeCoordsY]
+    ld d, a ; D = HeadY
+
+    ; --- 2. Comprobar colisión con paredes ---
+    ; Los límites válidos son X (1-18) e Y (1-14)
+    ld a, e ; Comprobar HeadX
+    cp 1
+    jr c, .collision_detected   ; Si A < 1, colisión
+    cp 19
+    jr nc, .collision_detected  ; Si A >= 19 (fuera por la derecha), colisión
+
+    ld a, d ; Comprobar HeadY
+    cp 1
+    jr c, .collision_detected   ; Si A < 1, colisión
+    cp 15
+    jr nc, .collision_detected  ; Si A >= 15 (fuera por abajo), colisión
+
+    ; --- 3. Comprobar colisión con el cuerpo ---
+    ; Comparamos la cabeza (índice 0) con el resto del cuerpo (1 a Length-1)
+    ld a, [SnakeLength]
+    dec a
+    ret z               ; Si la serpiente solo mide 1, no puede chocar
+    ld b, a             ; B = contador (Length - 1)
+    ld hl, SnakeCoordsX + 1 ; Puntero al X del primer segmento (cuello)
+    ld de, SnakeCoordsY + 1 ; Puntero al Y del primer segmento (cuello)
+
+.self_collision_loop:
+    ld a, [hl]          ; A = SegmentX
+    cp e                ; Compara con HeadX
+    jr nz, .segment_ok  ; Si X no coincide, saltar
+
+    ld a, [de]          ; A = SegmentY
+    cp d                ; Compara con HeadY
+    jr z, .collision_detected ; Si Y TAMBIÉN coincide, ¡colisión!
+
+.segment_ok:
+    inc hl              ; Siguiente SegmentX
+    inc de              ; Siguiente SegmentY
+    dec b
+    jr nz, .self_collision_loop ; Repetir bucle
+
+    ; --- 4. Sin colisión ---
+    or a                ; Resetea el flag de carry (CF = 0)
+    ret
+
+.collision_detected:
+    scf                 ; Pone el flag de carry a 1 (CF = 1)
+    ret
+
+; ==============================================================================
+; GameOver
+; Se llama al colisionar. Borra el cuerpo de la serpiente y congela el juego.
+; NO borra la cabeza, para evitar borrar el tile de la pared.
+; ==============================================================================
+GameOver:
+    ; 1. Deshabilitamos interrupciones para congelar el juego.
+    di
+    
+    ; 2. Preparamos el bucle para borrar la serpiente
+    ld a, [SnakeLength]
+    dec a               ; Restamos 1, porque no vamos a borrar la cabeza
+    ret z               ; Si la longitud era 1, no hay nada que borrar
+    
+    ld b, a             ; B = contador (Length - 1)
+    ld hl, SnakeCoordsX + 1 ; Empezamos en el CUELLO (índice 1)
+    ld de, SnakeCoordsY + 1 ; Empezamos en el CUELLO (índice 1)
+
+.clear_loop:
+    push hl             ; Guardamos puntero X
+    push de             ; Guardamos puntero Y
+    push bc             ; Guardamos contador
+    
+    ld c, [hl]          ; C = SegmentX
+    ld a, [de]
+    ld b, a             ; B = SegmentY
+    ld a, TILE_EMPTY    ; Tile vacío
+    call DrawTileAt     ; Borra el tile
+    
+    pop bc              ; Recuperamos contador B
+    pop de              ; Recuperamos puntero DE
+    pop hl              ; Recuperamos puntero HL
+    
+    inc hl              ; Siguiente X
+    inc de              ; Siguiente Y
+    
+    dec b               ; Decrementamos contador
+    jr nz, .clear_loop  ; Repetimos si B no es 0
+    
+    ; 3. Bucle infinito para detener el juego
+.freeze:
+    jp .freeze
