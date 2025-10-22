@@ -466,4 +466,63 @@ CheckForFood:
 
     ; 2. Generamos una nueva pieza de comida
     call SpawnFood
+
+    ; 3. Aumentamos puntuación en 1
+    call IncScore
     ret
+
+ScoreInit:
+    ld hl, Score
+    xor a
+    ld [hl+], a
+    ld [hl], a
+    ret
+
+IncScore:
+    ld hl, Score
+    ld a, [hl]
+    inc a
+    ld [hl+], a
+    jr nz, .calcCent    ; Si no hay overflow (a!=0 al incrementar), salto
+    ld a, [hl]
+    inc a
+    ld [hl], a
+.calcCent:              ; Calcula centenas, decenas y unidades
+    ld b, 0             ; Contador de centenas
+.centLoop:
+    ld a, h
+    cp 1
+    jr c, .calcDec
+    ld a, l
+    cp 100
+    jr c, .calcDec
+    sub 100
+    inc b
+    ld l, a
+    jr .centLoop
+
+.calcDec:
+    ld c, 0             ; Contador decenas
+.decLoop:
+    ld a, l
+    cp 10
+    jr c, .drawDigits
+    sub 10
+    inc c
+    ld l, a
+    jr .decLoop
+
+.drawDigits:
+    ld hl, $9A0A
+    ld a, b
+    add a, $9B
+    ld [hl+], a
+    ld a, c
+    add a, $9B
+    ld [hl+], a
+    ld a, l
+    add a, $9B
+    ld [hl], a
+
+    ret
+    

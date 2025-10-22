@@ -23,6 +23,7 @@ SnakeLength:    ds 1
 SnakeDirection: ds 1
 SnakeCoordsX:   ds SNAKE_MAX_LENGTH
 SnakeCoordsY:   ds SNAKE_MAX_LENGTH
+Score:			ds 2
 
 SECTION "Game Scene Code", ROM0
 
@@ -77,6 +78,8 @@ game_init::
 	call DrawTileAt
 
 	call SpawnFood
+
+	call ScoreInit
 
 	;; Configuramos el LCDC para mostrar el mapa 1
 	ld a, %10010011
