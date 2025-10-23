@@ -479,50 +479,74 @@ ScoreInit:
     ret
 
 IncScore:
+    ; Incrementar Score (16-bit)
     ld hl, Score
     ld a, [hl]
     inc a
     ld [hl+], a
-    jr nz, .calcCent    ; Si no hay overflow (a!=0 al incrementar), salto
+    jr nz, .loadScore   ; Si no hay overflow, continuar
     ld a, [hl]
     inc a
     ld [hl], a
-.calcCent:              ; Calcula centenas, decenas y unidades
+
+.loadScore:
+    ; Cargar Score completo en HL para hacer las divisiones
+    ld hl, Score
+    ld a, [hl+]
+    ld h, [hl]
+    ld l, a             ; HL = Score (16-bit)
+
+.calcCent:              ; Calcula centenas
     ld b, 0             ; Contador de centenas
 .centLoop:
     ld a, h
-    cp 1
-    jr c, .calcDec
+    cp 0
+    jr nz, .hasHundreds ; Si H > 0, definitivamente >= 100
     ld a, l
     cp 100
-    jr c, .calcDec
+    jr c, .calcDec      ; Si L < 100, salir
+.hasHundreds:
+    ; HL -= 100
+    ld a, l
     sub 100
-    inc b
     ld l, a
+    ld a, h
+    sbc 0
+    ld h, a
+    inc b               ; Incrementar contador de centenas
     jr .centLoop
 
 .calcDec:
-    ld c, 0             ; Contador decenas
+    ld c, 0             ; Contador de decenas
 .decLoop:
     ld a, l
     cp 10
-    jr c, .drawDigits
+    jr c, .drawDigits   ; Si L < 10, salir
     sub 10
-    inc c
     ld l, a
+    inc c               ; Incrementar contador de decenas
     jr .decLoop
 
 .drawDigits:
+    ; Ahora: B = centenas, C = decenas, L = unidades
+    ; Escribir en VRAM en $9A0A
+    push hl
     ld hl, $9A0A
+    
+    ; Escribir centenas
     ld a, b
     add a, $9B
     ld [hl+], a
+    
+    ; Escribir decenas
     ld a, c
     add a, $9B
     ld [hl+], a
-    ld a, l
+    
+    ; Escribir unidades
+    pop de              ; Recuperar valor original (L tiene unidades)
+    ld a, e             ; A = unidades
     add a, $9B
     ld [hl], a
-
-    ret
     
+    ret
