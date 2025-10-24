@@ -382,71 +382,69 @@ GetTrueRandom:
     ret             ; Si es diferente, salimos con el nuevo valor en A
 
 SpawnFood:
+    ; Ponemos un límite de intentos para evitar bucles infinitos
+    ld d, 50  ; Máximo 50 intentos
+    
 .generate_coords:
     ; --- Generar coordenada X (rango 1-18) ---
-    
 .generate_x_loop:
-	call GetTrueRandom
-    ; 1. Generamos un número aleatorio en el rango 0-17.
-    ;    Para ello, tomamos un número aleatorio (0-31) y lo descartamos si es >= 18.
-    and %00011111           ; Máscara para obtener un número entre 0 y 31
-    cp 18                   ; Comparamos con 18
-    jr nc, .generate_x_loop ; Si A >= 18, es inválido, vuelve a intentarlo
-    
-    ; 2. Ahora A está entre 0 y 17. Le sumamos 1 para obtener el rango 1-18.
-    inc a
+    call GetRandomByte    ; <-- CORREGIDO: Usar la función de aleatoriedad
+    and %00011111       ; Máscara para 0-31
+    cp 18
+    jr nc, .generate_x_loop
+    inc a               ; Rango 1-18
     ld [FoodX], a
 
-    
 .generate_y_loop:
-	; --- Generar coordenada Y (rango 1-14) ---
-    call GetTrueRandom
-    ; 1. Generamos un número aleatorio en el rango 0-13.
-    ;    Usamos una máscara más pequeña (0-15) y descartamos si es >= 14.
-    and %00001111           ; Máscara para obtener un número entre 0 y 15
-    cp 14                   ; Comparamos con 14
-    jr nc, .generate_y_loop ; Si A >= 14, es inválido, vuelve a intentarlo
-
-    ; 2. Ahora A está entre 0 y 13. Le sumamos 1 para obtener el rango 1-14.
-    inc a
+    ; --- Generar coordenada Y (rango 1-14) ---
+    call GetRandomByte    ; <-- CORREGIDO: Usar la función de aleatoriedad
+    and %00001111       ; Máscara para 0-15
+    cp 14
+    jr nc, .generate_y_loop
+    inc a               ; Rango 1-14
     ld [FoodY], a
 
-    ; --- Comprobamos que no hemos generado la comida encima de la serpiente ---
-    ; (Esta parte de tu código ya funcionaba bien y la mantenemos)
-    ld a, [SnakeLength]
-    ld b, a
-    ld hl, SnakeCoordsX
-    ld de, SnakeCoordsY
-.check_snake_collision:
-    push de
-    push hl
-    
-    ld a, [hl]
-    ld c, a
-    ld a, [FoodX]
-    cp c
-    jr nz, .coords_ok
-
-    ld a, [de]
-    ld c, a
+    ; --- Comprobar si la posición está libre en el mapa ---
+    ; (El resto de tu función es correcta y no necesita cambios)
     ld a, [FoodY]
-    cp c
-    jr nz, .coords_ok
+    ld b, a
+    ld a, [FoodX]
+    ld c, a
+    
+    ; Calcular dirección en VRAM
+    push de             ; Guardamos el contador de intentos
+    
+    ld l, b             ; L = Y
+    ld h, 0
+    add hl, hl          ; HL = Y * 2
+    add hl, hl          ; HL = Y * 4
+    add hl, hl          ; HL = Y * 8
+    add hl, hl          ; HL = Y * 16
+    add hl, hl          ; HL = Y * 32
+    
+    ld b, 0
+    add hl, bc          ; HL = (Y * 32) + X
+    
+    ld bc, $9800
+    add hl, bc          ; HL = dirección en VRAM
+    
+    ; Leer el tile
+    ld a, [hl]
+    
+    pop de              ; Recuperamos el contador
+    
+    ; Si el tile es TILE_EMPTY (0), la posición está libre
+    cp TILE_EMPTY
+    jr z, .position_valid
+    
+    ; Si no está libre, decrementar contador de intentos
+    dec d
+    jr nz, .generate_coords  ; Si quedan intentos, volver a intentar
+    
+    ret ; (Salida si no se encuentra sitio)
 
-    ; Colisión detectada, tenemos que generar nuevas coordenadas desde el principio
-    pop hl
-    pop de
-    jp .generate_coords
-
-.coords_ok:
-    pop hl
-    pop de
-    inc hl
-    inc de
-    dec b
-    jr nz, .check_snake_collision
-
-    ; Si hemos pasado el bucle, la posición es válida. La dibujamos.
+.position_valid:
+    ; La posición es válida, dibujamos la fruta
     ld a, [FoodX]
     ld c, a
     ld a, [FoodY]
@@ -480,62 +478,53 @@ CheckForFood:
 
 ; ==============================================================================
 ; CheckAllCollisions
-; Comprueba si la cabeza de la serpiente choca con las paredes o
-; con su propio cuerpo.
+; Comprueba si hay colisión en la posición ACTUAL de la cabeza.
+; Esta función se llama DESPUÉS de actualizar las coordenadas en memoria
+; pero ANTES de dibujar en pantalla.
 ; Salida:
 ;   Flag Carry (CF) = 1 si hay colisión, 0 si no.
 ; ==============================================================================
 CheckAllCollisions:
-    ; --- 1. Cargar coordenadas de la cabeza ---
+    ; --- 1. Leer la posición actual de la cabeza ---
     ld a, [SnakeCoordsX]
-    ld e, a ; E = HeadX
+    ld c, a ; C = HeadX
     ld a, [SnakeCoordsY]
-    ld d, a ; D = HeadY
-
-    ; --- 2. Comprobar colisión con paredes ---
-    ; Los límites válidos son X (1-18) e Y (1-14)
-    ld a, e ; Comprobar HeadX
-    cp 1
-    jr c, .collision_detected   ; Si A < 1, colisión
-    cp 19
-    jr nc, .collision_detected  ; Si A >= 19 (fuera por la derecha), colisión
-
-    ld a, d ; Comprobar HeadY
-    cp 1
-    jr c, .collision_detected   ; Si A < 1, colisión
-    cp 15
-    jr nc, .collision_detected  ; Si A >= 15 (fuera por abajo), colisión
-
-    ; --- 3. Comprobar colisión con el cuerpo ---
-    ; Comparamos la cabeza (índice 0) con el resto del cuerpo (1 a Length-1)
-    ld a, [SnakeLength]
-    dec a
-    ret z               ; Si la serpiente solo mide 1, no puede chocar
-    ld b, a             ; B = contador (Length - 1)
-    ld hl, SnakeCoordsX + 1 ; Puntero al X del primer segmento (cuello)
-    ld de, SnakeCoordsY + 1 ; Puntero al Y del primer segmento (cuello)
-
-.self_collision_loop:
-    ld a, [hl]          ; A = SegmentX
-    cp e                ; Compara con HeadX
-    jr nz, .segment_ok  ; Si X no coincide, saltar
-
-    ld a, [de]          ; A = SegmentY
-    cp d                ; Compara con HeadY
-    jr z, .collision_detected ; Si Y TAMBIÉN coincide, ¡colisión!
-
-.segment_ok:
-    inc hl              ; Siguiente SegmentX
-    inc de              ; Siguiente SegmentY
-    dec b
-    jr nz, .self_collision_loop ; Repetir bucle
-
-    ; --- 4. Sin colisión ---
-    or a                ; Resetea el flag de carry (CF = 0)
+    ld b, a ; B = HeadY
+    
+    ; --- 2. Calcular dirección en VRAM: $9800 + (Y * 32) + X ---
+    ld l, b             ; L = Y
+    ld h, 0             ; HL = Y
+    add hl, hl          ; HL = Y * 2
+    add hl, hl          ; HL = Y * 4
+    add hl, hl          ; HL = Y * 8
+    add hl, hl          ; HL = Y * 16
+    add hl, hl          ; HL = Y * 32
+    
+    ld b, 0
+    ; C ya tiene X
+    add hl, bc          ; HL = (Y * 32) + X
+    
+    ld bc, $9800
+    add hl, bc          ; HL = dirección en VRAM
+    
+    ; --- 3. Leer el tile en esa posición ---
+    ld a, [hl]          ; A = tile en la posición de la cabeza
+    
+    ; --- 4. Comprobar si el tile indica colisión ---
+    ; Si es TILE_EMPTY (0), no hay colisión
+    cp TILE_EMPTY
+    jr z, .no_collision
+    
+    ; Si es TILE_FRUIT, tampoco hay colisión (podemos comerla)
+    cp TILE_FRUIT
+    jr z, .no_collision
+    
+    ; Cualquier otro tile (pared, cuerpo) es colisión
+    scf                 ; Pone el flag de carry a 1 (CF = 1)
     ret
 
-.collision_detected:
-    scf                 ; Pone el flag de carry a 1 (CF = 1)
+.no_collision:
+    or a                ; Resetea el flag de carry (CF = 0)
     ret
 
 ; ==============================================================================
@@ -580,3 +569,31 @@ GameOver:
     ; 3. Bucle infinito para detener el juego
 .freeze:
     jp .freeze
+
+; ==============================================================================
+; SeedRandom
+; Inicializa la semilla del PRNG con un valor "aleatorio" de rDIV.
+; Debe llamarse una vez en game_init.
+; ==============================================================================
+SeedRandom:
+    call GetTrueRandom ; Usamos tu función para obtener un valor inicial
+    or 1               ; Nos aseguramos de que la semilla nunca sea 0
+    ld [RNGSeed], a    ; Guardamos la semilla
+    ret
+
+; ==============================================================================
+; GetRandomByte (PRNG)
+; Genera un número pseudoaleatorio de 8 bits usando un LFSR.
+; Esto SÍ se puede llamar en un bucle rápido.
+; Salida: A = byte aleatorio
+; ==============================================================================
+GetRandomByte:
+    ld a, [RNGSeed]
+    ; LFSR de 8 bits (Polinomio: x^8 + x^6 + x^5 + x^4 + 1)
+    bit 7, a        ; Comprueba el bit 7 (el que va a "salir")
+    sla a           ; Desplaza toda la semilla a la izquierda
+    jr nc, .no_xor  ; Si el bit 7 era 0, salta
+    xor %00111001   ; Si era 1, aplica el XOR con los "taps"
+.no_xor:
+    ld [RNGSeed], a ; Guarda la nueva semilla para la próxima vez
+    ret             ; Devuelve el nuevo valor en A

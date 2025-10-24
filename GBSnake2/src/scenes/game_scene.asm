@@ -23,6 +23,7 @@ SnakeLength:    ds 1
 SnakeDirection: ds 1
 SnakeCoordsX:   ds SNAKE_MAX_LENGTH
 SnakeCoordsY:   ds SNAKE_MAX_LENGTH
+RNGSeed:        ds 1
 
 SECTION "Game Scene Code", ROM0
 
@@ -53,6 +54,7 @@ game_init::
 
 	; 1. Preparamos nuestras variables
     call InitializeSnakeData
+	call SeedRandom
 
     ; 2. Dibujamos la serpiente inicial sobre el mapa ya cargado
 	ld a, [SnakeCoordsX]
