@@ -474,126 +474,75 @@ CheckForFood:
 
     ; 2. Generamos una nueva pieza de comida
     call SpawnFood
+
+    ; 3. Aumentamos puntuación en 1
+    call IncScore
     ret
 
-; ==============================================================================
-; CheckAllCollisions
-; Comprueba si hay colisión en la posición ACTUAL de la cabeza.
-; Esta función se llama DESPUÉS de actualizar las coordenadas en memoria
-; pero ANTES de dibujar en pantalla.
-; Salida:
-;   Flag Carry (CF) = 1 si hay colisión, 0 si no.
-; ==============================================================================
-CheckAllCollisions:
-    ; --- 1. Leer la posición actual de la cabeza ---
-    ld a, [SnakeCoordsX]
-    ld c, a ; C = HeadX
-    ld a, [SnakeCoordsY]
-    ld b, a ; B = HeadY
-    
-    ; --- 2. Calcular dirección en VRAM: $9800 + (Y * 32) + X ---
-    ld l, b             ; L = Y
-    ld h, 0             ; HL = Y
-    add hl, hl          ; HL = Y * 2
-    add hl, hl          ; HL = Y * 4
-    add hl, hl          ; HL = Y * 8
-    add hl, hl          ; HL = Y * 16
-    add hl, hl          ; HL = Y * 32
-    
-    ld b, 0
-    ; C ya tiene X
-    add hl, bc          ; HL = (Y * 32) + X
-    
-    ld bc, $9800
-    add hl, bc          ; HL = dirección en VRAM
-    
-    ; --- 3. Leer el tile en esa posición ---
-    ld a, [hl]          ; A = tile en la posición de la cabeza
-    
-    ; --- 4. Comprobar si el tile indica colisión ---
-    ; Si es TILE_EMPTY (0), no hay colisión
-    cp TILE_EMPTY
-    jr z, .no_collision
-    
-    ; Si es TILE_FRUIT, tampoco hay colisión (podemos comerla)
-    cp TILE_FRUIT
-    jr z, .no_collision
-    
-    ; Cualquier otro tile (pared, cuerpo) es colisión
-    scf                 ; Pone el flag de carry a 1 (CF = 1)
+ScoreInit:
+    ld hl, Score
+    xor a
+    ld [hl+], a
+    ld [hl], a
     ret
 
-.no_collision:
-    or a                ; Resetea el flag de carry (CF = 0)
+IncScore:
+    ; Incrementar Score (8-bit)
+    ld hl, Score
+    ld a, [hl]
+    inc a
+    ld [hl], a          ; Guardar nuevo valor (con overflow automático a 0 si pasa de 255)
+
+.loadScore:
+    ; Cargar Score en L (8-bit)
+    ld l, a             ; L = Score
+    ld h, 0             ; H = 0 (para trabajar con HL como 16-bit)
+
+.calcCent:              ; Calcula centenas
+    ld b, 0             ; Contador de centenas
+.centLoop:
+    ld a, l
+    cp 100
+    jr c, .calcDec      ; Si L < 100, salir
+    
+    ; L -= 100
+    sub 100
+    ld l, a
+    inc b               ; Incrementar contador de centenas
+    jr .centLoop
+
+.calcDec:
+    ld c, 0             ; Contador de decenas
+.decLoop:
+    ld a, l
+    cp 10
+    jr c, .prepareDrawScore   ; Si L < 10, salir
+    sub 10
+    ld l, a
+    inc c               ; Incrementar contador de decenas
+    jr .decLoop
+
+.prepareDrawScore:
+    ld d, l             ; D = unidades
+    ; Ahora: B = centenas, C = decenas, D = unidades
+    ; Caer en DrawScore
+
+DrawScore::
+    ld hl, $9A0A
+    
+    ; Escribir centenas
+    ld a, b
+    add a, $9B
+    ld [hl+], a
+    
+    ; Escribir decenas
+    ld a, c
+    add a, $9B
+    ld [hl+], a
+    
+    ; Escribir unidades
+    ld a, d
+    add a, $9B
+    ld [hl], a
+    
     ret
-
-; ==============================================================================
-; GameOver
-; Se llama al colisionar. Borra el cuerpo de la serpiente y congela el juego.
-; NO borra la cabeza, para evitar borrar el tile de la pared.
-; ==============================================================================
-GameOver:
-    ; 1. Deshabilitamos interrupciones para congelar el juego.
-    di
-    
-    ; 2. Preparamos el bucle para borrar la serpiente
-    ld a, [SnakeLength]
-    dec a               ; Restamos 1, porque no vamos a borrar la cabeza
-    ret z               ; Si la longitud era 1, no hay nada que borrar
-    
-    ld b, a             ; B = contador (Length - 1)
-    ld hl, SnakeCoordsX + 1 ; Empezamos en el CUELLO (índice 1)
-    ld de, SnakeCoordsY + 1 ; Empezamos en el CUELLO (índice 1)
-
-.clear_loop:
-    push hl             ; Guardamos puntero X
-    push de             ; Guardamos puntero Y
-    push bc             ; Guardamos contador
-    
-    ld c, [hl]          ; C = SegmentX
-    ld a, [de]
-    ld b, a             ; B = SegmentY
-    ld a, TILE_EMPTY    ; Tile vacío
-    call DrawTileAt     ; Borra el tile
-    
-    pop bc              ; Recuperamos contador B
-    pop de              ; Recuperamos puntero DE
-    pop hl              ; Recuperamos puntero HL
-    
-    inc hl              ; Siguiente X
-    inc de              ; Siguiente Y
-    
-    dec b               ; Decrementamos contador
-    jr nz, .clear_loop  ; Repetimos si B no es 0
-    
-    ; 3. Bucle infinito para detener el juego
-.freeze:
-    jp .freeze
-
-; ==============================================================================
-; SeedRandom
-; Inicializa la semilla del PRNG con un valor "aleatorio" de rDIV.
-; Debe llamarse una vez en game_init.
-; ==============================================================================
-SeedRandom:
-    call GetTrueRandom ; Usamos tu función para obtener un valor inicial
-    or 1               ; Nos aseguramos de que la semilla nunca sea 0
-    ld [RNGSeed], a    ; Guardamos la semilla
-    ret
-
-; ==============================================================================
-; GetRandomByte (PRNG)
-; Genera un número pseudoaleatorio de 8 bits usando un LFSR.
-; Esto SÍ se puede llamar en un bucle rápido.
-; Salida: A = byte aleatorio
-; ==============================================================================
-GetRandomByte:
-    ld a, [RNGSeed]
-    ; LFSR de 8 bits (Polinomio: x^8 + x^6 + x^5 + x^4 + 1)
-    bit 7, a        ; Comprueba el bit 7 (el que va a "salir")
-    sla a           ; Desplaza toda la semilla a la izquierda
-    jr nc, .no_xor  ; Si el bit 7 era 0, salta
-    xor %00111001   ; Si era 1, aplica el XOR con los "taps"
-.no_xor:
-    ld [RNGSeed], a ; Guarda la nueva semilla para la próxima vez
-    ret             ; Devuelve el nuevo valor en A
