@@ -23,6 +23,7 @@ SnakeLength:    ds 1
 SnakeDirection: ds 1
 SnakeCoordsX:   ds SNAKE_MAX_LENGTH
 SnakeCoordsY:   ds SNAKE_MAX_LENGTH
+RNGSeed:        ds 1
 Score:			ds 1
 
 SECTION "Game Scene Code", ROM0
