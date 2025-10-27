@@ -39,6 +39,8 @@ DEF CMP_SPRITES_TOTAL_BYTES equ SPRITE_SIZE*NUM_ENTITIES
 DEF CMP_SPRITES_H			equ $0C
 
 ; --- Constantes del juego ---
+DEF MENU_MAX_OPTIONS         equ 3
+DEF MENU_DELAY_FRAMES       equ 10
 DEF SNAKE_MAX_LENGTH    	equ 100     ; Longitud máxima de la serpiente
 DEF VRAM_TILE_SIZE          equ $10     ; Tamaño de cada tile en bytes
 DEF INITIAL_LENGTH      	equ 3       ; Longitud inicial de la serpiente
@@ -78,8 +80,8 @@ DEF SELECT_BUTTONS			equ $20
 DEF SELECT_NONE				equ $30
 DEF KEY_RIGHT   			equ 0
 DEF KEY_LEFT    			equ 1
-DEF KEY_DOWN    			equ 2
-DEF KEY_UP      			equ 3
+DEF KEY_DOWN    			equ 3
+DEF KEY_UP      			equ 2
 DEF KEY_A       			equ 4
 DEF KEY_B       			equ 5
 DEF KEY_SELECT				equ 6

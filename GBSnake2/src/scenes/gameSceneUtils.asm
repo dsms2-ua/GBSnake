@@ -381,6 +381,18 @@ GetTrueRandom:
     jr z, .wait_for_change ; Si es igual, sigue esperando
     ret             ; Si es diferente, salimos con el nuevo valor en A
 
+GetRandomByte::
+    ret
+
+GameOver::
+    ret
+
+CheckAllCollisions::
+    ret
+
+SeedRandom::
+    ret
+
 SpawnFood:
     ; Ponemos un límite de intentos para evitar bucles infinitos
     ld d, 50  ; Máximo 50 intentos

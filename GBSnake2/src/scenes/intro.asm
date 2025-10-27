@@ -2,7 +2,7 @@
 INCLUDE "constants.inc"
 
 SECTION "Intro Sprites", WRAM0[$C000]
-IntroOAMBuffer:: DS 24
+OAMBuffer:: DS 24
 
 SECTION "Intro Variables", WRAM0
 IntroSnakeCounter:: DS 1

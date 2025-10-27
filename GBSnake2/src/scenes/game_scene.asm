@@ -34,17 +34,11 @@ TextMax::
 	DB $8C, $80, $97
 
 game_init::
-	;; Copiamos los tiles sobreescribiendo los que ya están
-	ld hl, assets
-	ld de, VRAM_TILE_DATA_START
-	ld bc, 26*VRAM_TILE_SIZE
-	call copy_vram
-
 	;; Limpiamos los tiles del logo
-	ld hl, $8400
-	ld a, $00
-	ld bc, 28*VRAM_TILE_SIZE
-	call memset
+    ld hl, $8400
+    ld a, $00
+    ld bc, 28*VRAM_TILE_SIZE
+    call memset
 
 	;; Load game map
 	ld hl, mapGame

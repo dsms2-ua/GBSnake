@@ -4,7 +4,7 @@ INCLUDE "constants.inc"
 SECTION "Utils Scenes Intro", ROM0
 
 init_sprites_intro::
-	ld hl, IntroOAMBuffer
+	ld hl, OAMBuffer
 
 	;; Primera serpiente
 	ld [hl], 80
@@ -86,33 +86,33 @@ move_snake_intro::
 	ld [CounterIterations], a
 
 	;; Primera serpiente
-	ld hl, IntroOAMBuffer + 1
+	ld hl, OAMBuffer + 1
 	ld a, [hl] ;; Accedemos a la X porque primero se guarda la Y
 	add 4
 	ld [hl], a
 
-	ld hl, IntroOAMBuffer + 5
+	ld hl, OAMBuffer + 5
 	ld a, [hl]
 	add 4
 	ld [hl], a
 
-	ld hl, IntroOAMBuffer + 9
+	ld hl, OAMBuffer + 9
 	ld a, [hl]
 	add 4
 	ld [hl], a
 
 	;; Segunda serpiente
-	ld hl, IntroOAMBuffer + 13
+	ld hl, OAMBuffer + 13
 	ld a, [hl]
 	sub 4
 	ld [hl], a
 
-	ld hl, IntroOAMBuffer + 17
+	ld hl, OAMBuffer + 17
 	ld a, [hl]
 	sub 4
 	ld [hl], a
 
-	ld hl, IntroOAMBuffer + 21
+	ld hl, OAMBuffer + 21
 	ld a, [hl]
 	sub 4
 	ld [hl], a
@@ -123,7 +123,7 @@ move_snake_intro::
 update_logo_intro::
 .getTileHead
 	;; Comprobamos si alguna de las dos serpientes ha llegado a algún tile
-	ld hl, IntroOAMBuffer + 1 ;; Cargamos la posición de la primera cabeza
+	ld hl, OAMBuffer + 1 ;; Cargamos la posición de la primera cabeza
 	ld a, [hl]
 	;; Dividimos entre 8 porque la dirección del tile es X/8
 	srl a
@@ -131,7 +131,7 @@ update_logo_intro::
 	srl a
 	ld b, a
 
-	ld hl, IntroOAMBuffer + 13 ;; Ahora la segunda
+	ld hl, OAMBuffer + 13 ;; Ahora la segunda
 	ld a, [hl]
 	sub 16
 	srl a
@@ -172,7 +172,7 @@ update_logo_intro::
 	ret
 
 copy_OAM_buffer::
-	ld hl, IntroOAMBuffer
+	ld hl, OAMBuffer
 	ld de, OAM_DIR
 	ld b, 24
 	call memcpy_256
@@ -249,12 +249,32 @@ set_tile_to_0:
 ;; ---------------
 ;; Clean window values of the message
 clean_window_intro::
+	ld hl, $9812
+	ld b, 2
+	ld a, $00
+	call memset_256
+
+	ld hl, $9829
+	ld b, 11
+	ld a, $00
+	call memset_256
+
+	ld hl, $9904
+	ld b, 14
+	ld a, $00
+	call memset_256
+
+	ld hl, $9924
+	ld b, 14
+	ld a, $00
+	call memset_256
+
 	ld hl, $9988
 	ld b, 5
 	ld a, $00
 	call memset_256
 
-	ld hl, $99C8
+	ld hl, $99A8
 	ld b, 5
 	ld a, $00
 	call memset_256
