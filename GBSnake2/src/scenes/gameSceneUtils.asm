@@ -357,6 +357,8 @@ DrawTileAt:
     ld bc, $9800
     add hl, bc      ; HL tiene ahora la dirección final y correcta en VRAM
 
+    call WaitVRAMSafe
+
     ; Recuperamos el valor del tile y lo escribimos en la dirección calculada
     pop bc
     pop af
@@ -504,101 +506,171 @@ GetRandomByte:
     ret             ; Devuelve el nuevo valor en A
 
 SpawnFood:
-    ; Ponemos un límite de intentos para evitar bucles infinitos
-    ld d, 50  ; Máximo 50 intentos
+    ; --- FASE 1: Intentos aleatorios (30 intentos) ---
+    ld b, 30            ; Contador de intentos aleatorios
     
-.generate_coords:
-    ; --- Generar coordenada X (rango 1-18) ---
-.generate_x_loop:
-    call GetRandomByte    ; <-- CORREGIDO: Usar la función de aleatoriedad
-    and %00011111       ; Máscara para 0-31
+.random_loop:
+    ; Generar coordenada X (rango 1-18)
+    call GetRandomByte
+    and %00011111       ; 0-31
     cp 18
-    jr nc, .generate_x_loop
-    inc a               ; Rango 1-18
-    ld [FoodX], a
-
-.generate_y_loop:
-    ; --- Generar coordenada Y (rango 1-14) ---
-    call GetRandomByte    ; <-- CORREGIDO: Usar la función de aleatoriedad
-    and %00001111       ; Máscara para 0-15
+    jr nc, .random_loop  ; Si >= 18, reintentar
+    inc a               ; Ahora A está en rango 1-18
+    ld c, a             ; C = X candidato
+    .random_loop_2
+    ; Generar coordenada Y (rango 1-14)
+    call GetRandomByte
+    and %00001111       ; 0-15
     cp 14
-    jr nc, .generate_y_loop
-    inc a               ; Rango 1-14
+    jr nc, .random_loop_2  ; Si >= 14, reintentar solo la Y
+    inc a               ; Ahora A está en rango 1-14
+    ld b, a             ; B = Y candidato
+    
+    ; Verificar si está libre
+    push bc             ; Guardar coordenadas candidatas
+    call CheckTileAt    ; Lee el tile en (B=Y, C=X)
+    pop bc              ; Recuperar coordenadas
+    cp TILE_EMPTY       ; ¿Es vacío?
+    jr z, .found_free   ; Si es vacío, casilla encontrada
+    
+    dec b               ; Decrementar contador
+    jr nz, .random_loop ; Continuar si B != 0
+    
+    ; Si llegamos aquí, los intentos aleatorios fallaron
+    jr .exhaustive_search
+
+.found_free:
+    ; Guardar coordenadas inmediatamente
+    ld a, c
+    ld [FoodX], a
+    ld a, b  
     ld [FoodY], a
-
-    ; --- Comprobar si la posición está libre en el mapa ---
-    ; (El resto de tu función es correcta y no necesita cambios)
-    ld a, [FoodY]
-    ld b, a
-    ld a, [FoodX]
-    ld c, a
     
-    ; Calcular dirección en VRAM
-    push de             ; Guardamos el contador de intentos
-    
-    ld l, b             ; L = Y
-    ld h, 0
-    add hl, hl          ; HL = Y * 2
-    add hl, hl          ; HL = Y * 4
-    add hl, hl          ; HL = Y * 8
-    add hl, hl          ; HL = Y * 16
-    add hl, hl          ; HL = Y * 32
-    
-    ld b, 0
-    add hl, bc          ; HL = (Y * 32) + X
-    
-    ld bc, $9800
-    add hl, bc          ; HL = dirección en VRAM
-    
-    ; Leer el tile
-    ld a, [hl]
-    
-    pop de              ; Recuperamos el contador
-    
-    ; Si el tile es TILE_EMPTY (0), la posición está libre
-    cp TILE_EMPTY
-    jr z, .position_valid
-    
-    ; Si no está libre, decrementar contador de intentos
-    dec d
-    jr nz, .generate_coords  ; Si quedan intentos, volver a intentar
-    
-    ret ; (Salida si no se encuentra sitio)
-
-.position_valid:
-    ; La posición es válida, dibujamos la fruta
-    ld a, [FoodX]
-    ld c, a
-    ld a, [FoodY]
-    ld b, a
+    ; Dibujar la fruta
     ld a, TILE_FRUIT
     call DrawTileAt
     ret
+
+; --- FASE 2: Búsqueda exhaustiva CORREGIDA ---
+.exhaustive_search:
+    ld d, 1             ; D = Y (1-14)
+    
+.loop_y:
+    ld a, d
+    cp 15               ; ¿Y >= 15?
+    jr nc, .no_space    ; Si sí, no hay espacio
+    
+    ld e, 1             ; E = X (1-18)
+    
+.loop_x:
+    ld a, e
+    cp 19               ; ¿X >= 19?
+    jr nc, .next_row    ; Si sí, siguiente fila
+    
+    ; Verificar posición (D=Y, E=X)
+    push de
+    ld b, d             ; B = Y para CheckTileAt
+    ld c, e             ; C = X para CheckTileAt
+    call CheckTileAt
+    pop de
+    cp TILE_EMPTY
+    jr z, .found_exhaustive   ; ¡Encontrado!
+    
+    inc e               ; Siguiente X
+    jr .loop_x
+    
+.next_row:
+    inc d               ; Siguiente Y
+    jr .loop_y
+
+.found_exhaustive:
+    ; Guardar coordenadas encontradas en búsqueda exhaustiva
+    ld a, e
+    ld [FoodX], a
+    ld a, d  
+    ld [FoodY], a
+    
+    ; Dibujar la fruta
+    ld a, TILE_FRUIT
+    ld b, d             ; Y coordenada
+    ld c, e             ; X coordenada  
+    call DrawTileAt
+    ret
+
+.no_space:
+    ; No hay espacio libre - podrías manejar esto como game over
+    ; o simplemente no spawnear comida (el juego se congela)
+    ret
+
+; ==============================================================================
+; CheckTileAt
+; Lee el tile en una posición específica del mapa
+; Entrada:
+;   B = coordenada Y
+;   C = coordenada X
+; Salida:
+;   A = tile leído
+; Registros modificados: A, HL, (usa D temporalmente)
+; ==============================================================================
+CheckTileAt:
+    push bc             ; Guardar BC
+    
+    ; Calcular dirección VRAM: $9800 + (Y * 32) + X
+    ld l, b             ; L = Y
+    ld h, 0             ; HL = Y
+    
+    ; Multiplicar Y por 32
+    add hl, hl          ; Y * 2
+    add hl, hl          ; Y * 4
+    add hl, hl          ; Y * 8
+    add hl, hl          ; Y * 16
+    add hl, hl          ; Y * 32
+    
+    ; Sumar X
+    ld b, 0             ; BC = X
+    add hl, bc
+    
+    ; Sumar base VRAM
+    ld bc, $9800
+    add hl, bc
+    
+    ; Leer tile
+    ld a, [hl]
+    
+    pop bc              ; Restaurar BC
+    ret
+
+; ==============================================================================
+; CheckForFood 
+; Verifica si la serpiente comió la fruta
+; ==============================================================================
 CheckForFood:
-    ; Comparamos la posición de la cabeza con la de la comida
+    ; Comparar coordenadas
     ld a, [SnakeCoordsX]
     ld b, a
     ld a, [FoodX]
     cp b
-    ret nz  ; Si las X no coinciden, salimos
+    ret nz              ; X diferente, no hay comida
 
     ld a, [SnakeCoordsY]
     ld b, a
     ld a, [FoodY]
     cp b
-    ret nz  ; Si las Y no coinciden, salimos
+    ret nz              ; Y diferente, no hay comida
 
-    ; --- ¡Hemos comido! ---
-    ; 1. Hacemos crecer a la serpiente
+    ; --- ¡COMIDA COMIDA! ---
+    
+    ; Incrementar longitud
     ld a, [SnakeLength]
     inc a
     ld [SnakeLength], a
 
-    ; 2. Generamos una nueva pieza de comida
-    call SpawnFood
-
-    ; 3. Aumentamos puntuación en 1
+    ; Incrementar puntuación
     call IncScore
+
+    ; Generar nueva comida
+    call SpawnFood
+    
     ret
 
 ScoreInit:
@@ -668,3 +740,18 @@ DrawScore::
     ld [hl], a
     
     ret
+
+; ==============================================================================
+; WaitVRAMSafe
+; Espera hasta que sea seguro escribir en VRAM (Modo 0 o 1)
+; Se queda en bucle si la PPU está en Modo 2 (OAM) o 3 (Dibujando)
+; ==============================================================================
+WaitVRAMSafe:
+.wait_loop:
+    ld a, [rSTAT]       ; rSTAT está en $FF41
+    and %00000011       ; Nos quedamos solo con los 2 bits de modo
+    cp 2                ; ¿Es modo 2 (OAM Search)?
+    jr z, .wait_loop    ; Si es 2, seguir esperando
+    cp 3                ; ¿Es modo 3 (Drawing)?
+    jr z, .wait_loop    ; Si es 3, seguir esperando
+    ret                 ; Es modo 0 (H-Blank) o 1 (V-Blank), ¡es seguro!
