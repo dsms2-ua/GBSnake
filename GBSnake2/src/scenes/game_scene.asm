@@ -34,6 +34,8 @@ TextMax::
 	DB $8C, $80, $97, $A6
 
 game_init::
+	
+
 	; 1. Preparamos nuestras variables
     call InitializeSnakeData
 	call SeedRandom
@@ -109,4 +111,25 @@ game_run::
     call CheckForFood
 
     jp .game_loop
+
+	ret
+
+game_clean::
+	call apaga_pantalla
+
+	;; Borrar el mapa
+
+
+	;; Limpiar el score y max
+	ld hl, $9A04
+	ld b, 9
+	ld a, $00
+	call memset_256
+
+	ld hl, $9A26
+	ld b, 7
+	ld a, $00
+	call memset_256
+
+	ret
 

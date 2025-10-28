@@ -4,7 +4,10 @@ INCLUDE "constants.inc"
 SECTION "Entry point", ROM0[$150]
 
 main::
+   di
+   ld sp, $E000
    call ge_init
+   ei
 
    call intro_init
    call intro_run
@@ -28,6 +31,7 @@ main::
 .run_game_normal
    call game_init
    call game_run
+   call game_clean
    jp .game_over
 
 .run_game_caos

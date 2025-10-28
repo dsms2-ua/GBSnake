@@ -27,12 +27,12 @@ draw_game_over::
 
 draw_game_over_options::
     ld hl, TextRestart
-    ld de, $99A3
+    ld de, $99A5
     ld bc, TextRestartEnd - TextRestart
     call copy_vram
 
 	ld hl, TextMenu
-    ld de, $99E5
+    ld de, $99E3
     ld bc, TextMenuEnd - TextMenu
     call copy_vram
 
@@ -46,6 +46,7 @@ game_over_wait_option::
 	or a
 	jr z, .check_input
 	dec [hl]
+	
 	ret
 
 .check_input
