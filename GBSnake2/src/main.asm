@@ -26,10 +26,10 @@ main::
 .run_game_normal
    call game_init
    call game_run
-    jp .exit
+   
+   jp .exit
 
 .run_game_caos
-    
 
 .exit
    di     ;; Disable Interrupts

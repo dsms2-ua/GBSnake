@@ -159,3 +159,41 @@ read_joypad::
 	ld [rP1], a
 
 	ret
+
+
+enable_sram::
+	ld a, $0A
+	ld [$0000], a
+	ret
+
+disabel_sram::
+	ld a, $00
+	ld [$0000], a
+	ret 
+
+save_high_score::
+	ld a, [Score]
+	ld b, a
+	ld a, [HighScore]
+	cp b
+	;; Comprobamos si tenemos nuevo record
+	jr nc, .no_new_highscore
+
+	ld a, b
+	ld [HighScore], a
+
+	call enable_sram
+	ld hl, $A000
+	ld [hl], a
+	call disabel_sram
+
+.no_new_highscore
+	ret
+
+load_high_score::
+	call enable_sram
+	ld hl, $A000
+	ld a, [hl]
+	call disabel_sram
+	ld [HighScore], a
+	ret
