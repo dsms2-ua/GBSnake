@@ -8,6 +8,7 @@ show_logo_menu::
 	ld b, 14
 	call load_tiles_screen
 
+
 	ld c, $56
 	ld de, $9864
 	ld b, 14
@@ -21,9 +22,9 @@ show_text_menu::
     ld bc, TextClassicEnd - TextClassic
     call copy_vram
 
-    ld hl, TextChaos
+    ld hl, TextCaos
     ld de, $9907
-    ld bc, TextChaosEnd - TextChaos
+    ld bc, TextCaosEnd - TextCaos
     call copy_vram
 
     ld hl, TextExit
@@ -68,6 +69,7 @@ update_menu_selector::
     or a
     jr z, .check_input
     dec [hl]
+    
     ret
 
 .check_input
@@ -139,11 +141,12 @@ update_menu_selector::
     ret
 
 clean_window_menu::
+    ;; Ponemos a $00 todos los tiles del menu
     ld hl, $9844
 	ld b, 14
 	ld a, $00
 	call memset_256
-
+    
     ld hl, $9864
 	ld b, 14
 	ld a, $00
@@ -168,4 +171,5 @@ clean_window_menu::
 	ld b, 7
 	ld a, $00
 	call memset_256
+
     ret

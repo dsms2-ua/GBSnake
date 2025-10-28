@@ -24,7 +24,4 @@ ge_init::
 	set 1, [hl]
 	set 5, [hl]
 
-	;; Load HighScore
-	call load_high_score
-
 	ret

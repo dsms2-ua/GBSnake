@@ -16,9 +16,9 @@ TextClassic::
     DB $82, $8B, $80, $92, $92, $88, $82
 TextClassicEnd::
 
-TextChaos::
+TextCaos::
     DB $82, $87, $80, $8E, $92
-TextChaosEnd::
+TextCaosEnd::
 
 TextExit::
     DB $84, $97, $88, $93
@@ -30,12 +30,6 @@ TextPressAEnd::
 
 menu_init::
     ;; La pantalla ya está apagada del clean de la intro
-
-    ;; Copiamos los tiles sobreescribiendo los que ya están
-    ld hl, assets
-    ld de, VRAM_TILE_DATA_START
-    ld bc, 26*VRAM_TILE_SIZE
-    call copy_vram
 
     ;; Mostramos el logo
     call show_logo_menu
@@ -77,11 +71,15 @@ menu_run::
 menu_clean::
     call apaga_pantalla
 
-    ;; Borramos los textos
     call clean_window_menu
 
-    ;; Borramos el sprite del selector
     call init_oam
+
+    ;; Copiamos los tiles del mapa
+	ld hl, mapGame
+	ld de, BGMAP0_START
+	ld c, MAP_HEIGHT
+	call copy_map
 
     ret
 

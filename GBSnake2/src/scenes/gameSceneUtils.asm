@@ -778,17 +778,3 @@ WaitVRAMSafe:
     cp 3                ; ¿Es modo 3 (Drawing)?
     jr z, .wait_loop    ; Si es 3, seguir esperando
     ret                 ; Es modo 0 (H-Blank) o 1 (V-Blank), ¡es seguro!
-
-
-game_clean_pantalla::
-    ld hl, $9A04
-	ld b, 9
-	ld a, $00
-	call memset_256
-
-    ld hl, $9A26
-	ld b, 7
-	ld a, $00
-	call memset_256
-
-    ret

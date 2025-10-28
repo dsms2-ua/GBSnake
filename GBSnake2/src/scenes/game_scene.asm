@@ -34,12 +34,6 @@ TextMax::
 	DB $8C, $80, $97, $A6
 
 game_init::
-	;; Load game map
-	ld hl, mapGame
-	ld de, BGMAP0_START
-	ld c, MAP_HEIGHT
-	call copy_map
-
 	; 1. Preparamos nuestras variables
     call InitializeSnakeData
 	call SeedRandom
@@ -73,6 +67,9 @@ game_init::
 	ld d, 0
 	call DrawScore
 	call ScoreInit
+
+	;; Cargamos la puntuacion maxima y la dibujamos
+	call load_high_score
 
 	;; Configuramos el LCDC para mostrar el mapa 1
 	ld a, %10010011
@@ -113,18 +110,3 @@ game_run::
 
     jp .game_loop
 
-	ret
-
-game_clean::
-	;; Apagamos pantalla
-	call apaga_pantalla
-
-	;; Limpiamos el score
-	call game_clean_pantalla
-
-	;; Ocultamos el mapa
-	ld a, [rLCDC]
-	res 0, a
-	ld [rLCDC], a
-
-	ret

@@ -107,6 +107,22 @@ intro_run::
 intro_clean::
 	call apaga_pantalla
 
+	;; Volvemos a poner los tiles empezando desde el principio
+	ld hl, blank_assets
+	ld de, VRAM_TILE_DATA_START
+	ld b, 16*VRAM_TILE_SIZE
+	call memcpy_256
+
+	ld hl, food
+	ld de, VRAM_TILE_DATA_START + $10*VRAM_TILE_SIZE
+	ld b, 10*VRAM_TILE_SIZE
+	call memcpy_256
+
+	ld hl, $81A0
+	ld b, 14*VRAM_TILE_SIZE
+	ld a, $00
+	call memset_256
+
 	;; Limpiamos la window
 	call clean_window_intro
 
