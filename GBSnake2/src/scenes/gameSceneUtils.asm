@@ -357,11 +357,13 @@ DrawTileAt:
     ld bc, $9800
     add hl, bc      ; HL tiene ahora la dirección final y correcta en VRAM
 
-    call WaitVRAMSafe
-
     ; Recuperamos el valor del tile y lo escribimos en la dirección calculada
     pop bc
     pop af
+
+    push af              ; Guardamos A temporalmente
+    call WaitVRAMSafe    ; ← MOVER AQUÍ
+    pop af               ; Recuperamos A
     ld [hl], a
     ret
 
@@ -414,6 +416,10 @@ CheckAllCollisions:
     ld bc, $9800
     add hl, bc          ; HL = dirección en VRAM
     
+    push hl
+    call WaitVRAMSafe
+    pop hl
+
     ; --- 3. Leer el tile en esa posición ---
     ld a, [hl]          ; A = tile en la posición de la cabeza
     
@@ -634,6 +640,10 @@ CheckTileAt:
     ld bc, $9800
     add hl, bc
     
+    push hl              ; Guardar la dirección
+    call WaitVRAMSafe    ; Esperar momento seguro
+    pop hl               ; Recuperar la dirección
+
     ; Leer tile
     ld a, [hl]
     
@@ -722,22 +732,35 @@ IncScore:
     ; Caer en DrawScore
 
 DrawScore::
-    ld hl, $9A0A
-    
-    ; Escribir centenas
+    ; Preparar valores
     ld a, b
     add a, $9B
-    ld [hl+], a
+    ld b, a
     
-    ; Escribir decenas
     ld a, c
     add a, $9B
-    ld [hl+], a
+    ld c, a
     
-    ; Escribir unidades
     ld a, d
     add a, $9B
-    ld [hl], a
+    ld d, a
+    
+    ld hl, $9A0A
+    
+    di                 ; Deshabilitar interrupciones
+    
+    call WaitVRAMSafe
+    ld [hl], b
+    inc hl
+    
+    call WaitVRAMSafe
+    ld [hl], c
+    inc hl
+    
+    call WaitVRAMSafe
+    ld [hl], d
+    
+    ei                 ; Rehabilitar interrupciones
     
     ret
 
