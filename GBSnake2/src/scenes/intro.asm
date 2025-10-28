@@ -40,13 +40,13 @@ intro_init::
 	;; Load letters and numbers tiles
 	ld hl, abecedario
 	ld de, VRAM_FONT_DATA_START ;; $8800
-	ld bc, 37*VRAM_TILE_SIZE
+	ld bc, 41*VRAM_TILE_SIZE
 	call copy_vram
 
 	;; Load logo tiles
 	ld hl, logo_assets
 	ld de, $8400
-	ld bc, 28*VRAM_TILE_SIZE
+	ld bc, 44*VRAM_TILE_SIZE
 	call copy_vram
 
 	call init_sprites_intro

@@ -8,17 +8,17 @@ MenuDelay::     DS 1
 SECTION "Menu Code", ROM0
 
 MenuPositions::
-    DB 64, 36
-    DB 80, 36
-    DB 94, 36
+    DB 64, 40
+    DB 80, 40
+    DB 96, 40
 
 TextClassic::
     DB $82, $8B, $80, $92, $92, $88, $82
 TextClassicEnd::
 
-TextCaos::
-    DB $82, $80, $8E, $92
-TextCaosEnd::
+TextChaos::
+    DB $82, $87, $80, $8E, $92
+TextChaosEnd::
 
 TextExit::
     DB $84, $97, $88, $93
@@ -77,8 +77,10 @@ menu_run::
 menu_clean::
     call apaga_pantalla
 
+    ;; Borramos los textos
     call clean_window_menu
 
+    ;; Borramos el sprite del selector
     call init_oam
 
     ret

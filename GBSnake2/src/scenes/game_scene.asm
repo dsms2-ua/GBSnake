@@ -29,18 +29,12 @@ Score:			ds 1
 SECTION "Game Scene Code", ROM0
 
 TextScore::
-	DB $92, $82, $8E, $91, $84
+	DB $92, $82, $8E, $91, $84, $A6
 
 TextMax::
-	DB $8C, $80, $97
+	DB $8C, $80, $97, $A6
 
 game_init::
-	;; Limpiamos los tiles del logo
-    ld hl, $8400
-    ld a, $00
-    ld bc, 28*VRAM_TILE_SIZE
-    call memset
-
 	;; Load game map
 	ld hl, mapGame
 	ld de, BGMAP0_START
@@ -120,3 +114,18 @@ game_run::
 
     jp .game_loop
 
+	ret
+
+game_clean::
+	;; Apagamos pantalla
+	call apaga_pantalla
+
+	;; Limpiamos el score
+	call game_clean_pantalla
+
+	;; Ocultamos el mapa
+	ld a, [rLCDC]
+	res 0, a
+	ld [rLCDC], a
+
+	ret
