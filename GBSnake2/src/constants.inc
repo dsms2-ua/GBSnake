@@ -72,6 +72,7 @@ DEF TILE_CORNER_DL  EQU $0A ; Abajo-Izquierda
 DEF TILE_CORNER_LU  EQU $0B ; Izquierda-Arriba
 
 DEF TILE_FRUIT      		equ $11
+DEF TILE_POISON             EQU $10 
 DEF TILE_WALL       		equ 4
 
 ; --- Teclas (P1 register bits) ---
