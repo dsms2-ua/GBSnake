@@ -28,6 +28,7 @@ RNGSeedCaos:        ds 1
 AliveCaos::         ds 1
 ControlsInvertedCaos:: ds 1  ; 0 = normales, 1 = invertidos
 ScoreCaos::         ds 2      ; Score de 16 bits (2 bytes)
+PoisonTimerCaos:    ds 1  ; Contador para que desaparezca el veneno (~5 segundos)
 
 ; =============================================
 ; CÓDIGO DEL MODO CAOS
@@ -110,7 +111,7 @@ game_run_caos::
     jr z, .exit_loop
 
     call ReadJoypadCaos
-    ;call UpdatePoisonTimer
+    call UpdatePoisonTimer
     ; Lógica del contador de frames para ralentizar
     ld a, [FrameCounterCaos]
     dec a

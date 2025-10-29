@@ -596,8 +596,8 @@ TrySpawnPoison:
     ld [PoisonActiveCaos], a
 
     ; Inicializar temporizador (~5 segundos a 60fps = 300 frames)
-    ;ld a, 300
-    ;ld [PoisonTimerCaos], a
+    ld a, 1000
+    ld [PoisonTimerCaos], a
     
     ; Dibujar el veneno
     ld a, TILE_POISON
@@ -724,30 +724,30 @@ IncScoreCaos:
     ; Caer en DrawScore (usar la función original)
     jp DrawScore
 
-;UpdatePoisonTimer::
+UpdatePoisonTimer::
     ; Verificar si hay veneno activo
-;    ld a, [PoisonActiveCaos]
-;    cp 1
-;    ret nz      ; No hay veneno, salir
-;    
+    ld a, [PoisonActiveCaos]
+    cp 1
+    ret nz      ; No hay veneno, salir
+    
     ; Decrementar temporizador
-;    ld a, [PoisonTimerCaos]
-;    dec a
-;    ld [PoisonTimerCaos], a
+    ld a, [PoisonTimerCaos]
+    dec a
+    ld [PoisonTimerCaos], a
     
     ; Si llegó a 0, borrar el veneno
-;    ret nz      ; Si no es 0, aún tiene tiempo
+    ret nz      ; Si no es 0, aún tiene tiempo
     
     ; Temporizador llegó a 0, borrar veneno
-;    ld a, [PoisonXCaos]
-;    ld c, a
-;    ld a, [PoisonYCaos]
-;    ld b, a
-;    ld a, TILE_EMPTY
-;    call DrawTileAt
+    ld a, [PoisonXCaos]
+    ld c, a
+    ld a, [PoisonYCaos]
+    ld b, a
+    ld a, TILE_EMPTY
+    call DrawTileAt
     
     ; Desactivar veneno
-;    xor a
-;    ld [PoisonActiveCaos], a
+    xor a
+    ld [PoisonActiveCaos], a
     
-;    ret
+    ret
