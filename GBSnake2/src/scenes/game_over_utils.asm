@@ -4,28 +4,33 @@ SECTION "Game Over Utils", ROM0
 
 draw_game_over::
     ld hl, TextGameOver1
-    ld de, $9888
+    ld de, $9886
     ld bc, TextGameOver1End - TextGameOver1
     call copy_vram
 
 	ld hl, TextGameOver2
-    ld de, $98A8
+    ld de, $98A6
     ld bc, TextGameOver2End - TextGameOver2
     call copy_vram
 
 	ld hl, TextGameOver3
-    ld de, $98D8
+    ld de, $98E6
     ld bc, TextGameOver3End - TextGameOver3
     call copy_vram
 
 	ld hl, TextGameOver4
-    ld de, $9908
+    ld de, $9906
     ld bc, TextGameOver4End - TextGameOver4
     call copy_vram
 
     ret
 
 draw_game_over_options::
+	ld hl, TextScore
+	ld de, $9945
+	ld bc, TextScoreEnd - TextScore
+	call copy_vram
+
     ld hl, TextRestart
     ld de, $99A5
     ld bc, TextRestartEnd - TextRestart
@@ -46,7 +51,7 @@ game_over_wait_option::
 	or a
 	jr z, .check_input
 	dec [hl]
-	
+
 	ret
 
 .check_input
@@ -68,35 +73,35 @@ game_over_wait_option::
 	ret
 
 clean_game_over_pantalla::
-	ld hl, $9888
+	ld hl, $9866
 	ld b, 8
 	ld a, $00
 	call memset_256
 
-	ld hl, $99A8
+	ld hl, $9886
 	ld b, 8
 	ld a, $00
 	call memset_256
 
-	ld hl, $98D8
+	ld hl, $98C6
 	ld b, 8
 	ld a, $00
 	call memset_256
 
-	ld hl, $9908
+	ld hl, $98E6
 	ld b, 8
 	ld a, $00
 	call memset_256
 
 	;; --------------
 
-	ld hl, $99A3
-	ld b, 15
+	ld hl, $99A5
+	ld b, 11
 	ld a, $00
 	call memset_256
 
-	ld hl, $99E5
-	ld b, 11
+	ld hl, $99E3
+	ld b, 15
 	ld a, $00
 	call memset_256
 

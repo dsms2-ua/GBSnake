@@ -24,14 +24,17 @@ SnakeDirection: ds 1
 SnakeCoordsX:   ds SNAKE_MAX_LENGTH
 SnakeCoordsY:   ds SNAKE_MAX_LENGTH
 RNGSeed:        ds 1
+Alive::			DS 1
 
 SECTION "Game Scene Code", ROM0
 
 TextScore::
 	DB $92, $82, $8E, $91, $84, $A6
+TextScoreEnd::
 
 TextMax::
 	DB $8C, $80, $97, $A6
+TextMaxEnd::
 
 game_init::
 	;; Copiamos los tiles del mapa
@@ -81,6 +84,7 @@ game_init::
 	ld a, %10010011
 	ld [rLCDC], a
 
+	call wait_vblank_start
 	call show_message_game
 
 	call enciende_pantalla
@@ -88,15 +92,21 @@ game_init::
 	;;call wait_vblank_start
 
 	; Habilitamos la interrupción de V-Blank usando LDH
-    ld a, 1
-    ldh [rIE - $FF00], a ;
-	ei
+    ;ld a, 1
+    ;ldh [rIE - $FF00], a ;
+	;ei
 
 	ret
 
 game_run::
 .game_loop:
-    halt    ; Espera a V-Blank
+    ;halt    ; Espera a V-Blank
+	call wait_vblank_start
+
+	;; Comprobamos si estamos vivos
+	ld a, [Alive]
+	bit 0, a
+	jr z, .exit_loop
 
     call ReadJoypad
 
@@ -114,8 +124,9 @@ game_run::
     call MoveSnake
     call CheckForFood
 
-    jp .game_loop
+	jp .game_loop
 
+.exit_loop
 	ret
 
 game_clean::

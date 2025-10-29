@@ -6,20 +6,25 @@ SECTION "Utils Scenes Game", ROM0
 show_message_game::
 	ld hl, TextScore
 	ld de, $9A04
-	ld bc, 5
+	ld bc, 6
 	call copy_vram
 
 	ld hl, TextMax
 	ld de, $9A26
-	ld bc, 3
+	ld bc, 4
 	call copy_vram
 
 	ret
 
 
 InitializeSnakeData:
-   ld a, 8  ;8 frames entre movimiento
-   ld [MovementDelay], a
+    ;; Ponemos la serpiente como viva
+    ld hl, Alive
+    set 0, [hl]
+
+
+    ld a, FRAME_DELAY  ;8 frames entre movimiento
+    ld [MovementDelay], a
 
     ; Copia los valores de un solo byte
     ld a, [SnakeLength_INIT]
@@ -444,10 +449,7 @@ CheckAllCollisions:
 ; Se llama al colisionar. Borra el cuerpo de la serpiente y congela el juego.
 ; NO borra la cabeza, para evitar borrar el tile de la pared.
 ; ==============================================================================
-GameOver:
-    ; 1. Deshabilitamos interrupciones para congelar el juego.
-    di
-    
+GameOver:    
     ; 2. Preparamos el bucle para borrar la serpiente
     ld a, [SnakeLength]
     dec a               ; Restamos 1, porque no vamos a borrar la cabeza
@@ -478,9 +480,11 @@ GameOver:
     dec b               ; Decrementamos contador
     jr nz, .clear_loop  ; Repetimos si B no es 0
     
-    ; 3. Bucle infinito para detener el juego
-.freeze:
-    jp .freeze
+    ; 3. Ponemos a 0 el bit de vivo
+.variables
+    ld hl, Alive
+    res 0, [hl]
+    ret
 
 ; ==============================================================================
 ; SeedRandom

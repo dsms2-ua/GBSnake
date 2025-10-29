@@ -4,13 +4,13 @@ SECTION "Utils Menu", ROM0
 
 show_logo_menu::
 	ld c, $40
-	ld de, $9844
+	ld de, $9843
 	ld b, 14
 	call load_tiles_screen
 
 
 	ld c, $56
-	ld de, $9864
+	ld de, $9863
 	ld b, 14
 	call load_tiles_screen
 
@@ -69,7 +69,7 @@ update_menu_selector::
     or a
     jr z, .check_input
     dec [hl]
-    
+
     ret
 
 .check_input
