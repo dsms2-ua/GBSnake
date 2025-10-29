@@ -62,12 +62,6 @@ intro_init::
 	ld a, 34
 	ld [CounterIterations], a
 
-
-	;; Iniciamos el sonido y la música de la intro
-	call init_sound 	;; Encendemos el hardware
-	ld hl, IntroMusic 	;; Apuntamos a la canción de la intro
-	call play_music		;; La reproducimos
-
 	ret
 
 intro_run::

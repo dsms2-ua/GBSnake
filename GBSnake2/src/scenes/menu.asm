@@ -75,11 +75,5 @@ menu_clean::
 
     call init_oam
 
-    ;; Copiamos los tiles del mapa
-	ld hl, mapGame
-	ld de, BGMAP0_START
-	ld c, MAP_HEIGHT
-	call copy_map
-
     ret
 

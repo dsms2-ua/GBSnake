@@ -34,7 +34,11 @@ TextMax::
 	DB $8C, $80, $97, $A6
 
 game_init::
-	
+	;; Copiamos los tiles del mapa
+	ld hl, mapGame
+	ld de, BGMAP0_START
+	ld c, MAP_HEIGHT
+	call copy_map
 
 	; 1. Preparamos nuestras variables
     call InitializeSnakeData
@@ -77,11 +81,11 @@ game_init::
 	ld a, %10010011
 	ld [rLCDC], a
 
+	call show_message_game
+
 	call enciende_pantalla
 
-	call wait_vblank_start
-
-	call show_message_game
+	;;call wait_vblank_start
 
 	; Habilitamos la interrupción de V-Blank usando LDH
     ld a, 1
@@ -118,7 +122,10 @@ game_clean::
 	call apaga_pantalla
 
 	;; Borrar el mapa
-
+	ld hl, BGMAP0_START
+	ld bc, 32*32
+	xor a
+	call memset
 
 	;; Limpiar el score y max
 	ld hl, $9A04

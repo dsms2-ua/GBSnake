@@ -18,7 +18,6 @@ show_message_game::
 
 
 InitializeSnakeData:
-
    ld a, 8  ;8 frames entre movimiento
    ld [MovementDelay], a
 
