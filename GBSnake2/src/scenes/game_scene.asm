@@ -24,24 +24,20 @@ SnakeDirection: ds 1
 SnakeCoordsX:   ds SNAKE_MAX_LENGTH
 SnakeCoordsY:   ds SNAKE_MAX_LENGTH
 RNGSeed:        ds 1
-Score:			ds 1
+Alive::			DS 1
 
 SECTION "Game Scene Code", ROM0
 
 TextScore::
-	DB $92, $82, $8E, $91, $84
+	DB $92, $82, $8E, $91, $84, $A6
+TextScoreEnd::
 
 TextMax::
-	DB $8C, $80, $97
+	DB $8C, $80, $97, $A6
+TextMaxEnd::
 
 game_init::
-	;; Limpiamos los tiles del logo
-    ld hl, $8400
-    ld a, $00
-    ld bc, 28*VRAM_TILE_SIZE
-    call memset
-
-	;; Load game map
+	;; Copiamos los tiles del mapa
 	ld hl, mapGame
 	ld de, BGMAP0_START
 	ld c, MAP_HEIGHT
@@ -81,26 +77,36 @@ game_init::
 	call DrawScore
 	call ScoreInit
 
+	;; Cargamos la puntuacion maxima y la dibujamos
+	call load_high_score
+
 	;; Configuramos el LCDC para mostrar el mapa 1
 	ld a, %10010011
 	ld [rLCDC], a
 
-	call enciende_pantalla
-
 	call wait_vblank_start
-
 	call show_message_game
 
+	call enciende_pantalla
+
+	;;call wait_vblank_start
+
 	; Habilitamos la interrupción de V-Blank usando LDH
-    ld a, 1
-    ldh [rIE - $FF00], a ;
-	ei
+    ;ld a, 1
+    ;ldh [rIE - $FF00], a ;
+	;ei
 
 	ret
 
 game_run::
 .game_loop:
-    halt    ; Espera a V-Blank
+    ;halt    ; Espera a V-Blank
+	call wait_vblank_start
+
+	;; Comprobamos si estamos vivos
+	ld a, [Alive]
+	bit 0, a
+	jr z, .exit_loop
 
     call ReadJoypad
 
@@ -118,5 +124,30 @@ game_run::
     call MoveSnake
     call CheckForFood
 
-    jp .game_loop
+	jp .game_loop
+
+.exit_loop
+	ret
+
+game_clean::
+	call apaga_pantalla
+
+	;; Borrar el mapa
+	ld hl, BGMAP0_START
+	ld bc, 32*32
+	xor a
+	call memset
+
+	;; Limpiar el score y max
+	ld hl, $9A04
+	ld b, 9
+	ld a, $00
+	call memset_256
+
+	ld hl, $9A26
+	ld b, 7
+	ld a, $00
+	call memset_256
+
+	ret
 

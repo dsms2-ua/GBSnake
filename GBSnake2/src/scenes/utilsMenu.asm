@@ -4,13 +4,13 @@ SECTION "Utils Menu", ROM0
 
 show_logo_menu::
 	ld c, $40
-	ld de, $9844
+	ld de, $9843
 	ld b, 14
 	call load_tiles_screen
 
 
-	ld c, $4E
-	ld de, $9864
+	ld c, $56
+	ld de, $9863
 	ld b, 14
 	call load_tiles_screen
 
@@ -44,7 +44,7 @@ draw_selector_sprite::
 
     ld [hl], 64 ;; Y
     inc hl
-    ld [hl], 36 ;; X
+    ld [hl], 40 ;; X
     inc hl
     ld [hl], $03
     inc hl
@@ -58,6 +58,7 @@ copy_OAM_buffer_menu::
 	ld de, OAM_DIR
 	ld b, 4
 	call memcpy_256
+
 	ret
 
 update_menu_selector::
@@ -68,6 +69,7 @@ update_menu_selector::
     or a
     jr z, .check_input
     dec [hl]
+
     ret
 
 .check_input
@@ -139,4 +141,35 @@ update_menu_selector::
     ret
 
 clean_window_menu::
+    ;; Ponemos a $00 todos los tiles del menu
+    ld hl, $9844
+	ld b, 14
+	ld a, $00
+	call memset_256
+    
+    ld hl, $9864
+	ld b, 14
+	ld a, $00
+	call memset_256
+
+    ld hl, $98C7
+	ld b, 7
+	ld a, $00
+	call memset_256
+
+    ld hl, $9907
+	ld b, 5
+	ld a, $00
+	call memset_256
+
+    ld hl, $9947
+	ld b, 4
+	ld a, $00
+	call memset_256
+
+    ld hl, $99C6
+	ld b, 7
+	ld a, $00
+	call memset_256
+
     ret

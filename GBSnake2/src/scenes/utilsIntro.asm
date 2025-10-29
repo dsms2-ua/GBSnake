@@ -200,7 +200,7 @@ show_logo::
 	call load_tiles_screen
 
 
-	ld c, $4E
+	ld c, $56
 	ld de, $9924
 	ld b, 14
 	call load_tiles_screen

@@ -40,13 +40,13 @@ intro_init::
 	;; Load letters and numbers tiles
 	ld hl, abecedario
 	ld de, VRAM_FONT_DATA_START ;; $8800
-	ld bc, 37*VRAM_TILE_SIZE
+	ld bc, 41*VRAM_TILE_SIZE
 	call copy_vram
 
 	;; Load logo tiles
 	ld hl, logo_assets
 	ld de, $8400
-	ld bc, 28*VRAM_TILE_SIZE
+	ld bc, 44*VRAM_TILE_SIZE
 	call copy_vram
 
 	call init_sprites_intro
@@ -61,12 +61,6 @@ intro_init::
 	ld [IntroSnakeCounter], a
 	ld a, 34
 	ld [CounterIterations], a
-
-
-	;; Iniciamos el sonido y la música de la intro
-	call init_sound 	;; Encendemos el hardware
-	ld hl, IntroMusic 	;; Apuntamos a la canción de la intro
-	call play_music		;; La reproducimos
 
 	ret
 
@@ -106,6 +100,22 @@ intro_run::
 
 intro_clean::
 	call apaga_pantalla
+
+	;; Volvemos a poner los tiles empezando desde el principio
+	ld hl, blank_assets
+	ld de, VRAM_TILE_DATA_START
+	ld b, 16*VRAM_TILE_SIZE
+	call memcpy_256
+
+	ld hl, food
+	ld de, VRAM_TILE_DATA_START + $10*VRAM_TILE_SIZE
+	ld b, 10*VRAM_TILE_SIZE
+	call memcpy_256
+
+	ld hl, $81A0
+	ld b, 14*VRAM_TILE_SIZE
+	ld a, $00
+	call memset_256
 
 	;; Limpiamos la window
 	call clean_window_intro
