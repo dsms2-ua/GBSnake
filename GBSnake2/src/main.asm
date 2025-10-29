@@ -35,7 +35,10 @@ main::
    jp .game_over
 
 .run_game_caos
-    
+   call game_init_caos
+   call game_run_caos
+   call game_clean_caos
+   jp .game_over
 
 .game_over
    call game_over_init
