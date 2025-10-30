@@ -79,6 +79,7 @@ game_init::
 
 	;; Cargamos la puntuacion maxima y la dibujamos
 	call load_high_score
+	call draw_high_score
 
 	;; Configuramos el LCDC para mostrar el mapa 1
 	ld a, %10010011
