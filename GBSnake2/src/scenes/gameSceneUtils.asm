@@ -568,40 +568,57 @@ SeedRandom:
     ret
 
 ; ==============================================================================
-; GetRandomByte (PRNG)
-; Genera un número pseudoaleatorio de 8 bits usando un LFSR.
-; Esto SÍ se puede llamar en un bucle rápido.
-; Salida: A = byte aleatorio
+; GetEnhancedRandom
+; Combina rDIV con el LFSR para mejor aleatoriedad
+; Salida: A = byte aleatorio mejorado
 ; ==============================================================================
-GetRandomByte:
+GetEnhancedRandom:
+    ; Leer rDIV para obtener "aleatoriedad" basada en tiempo
+    ld a, [rDIV]
+    ld b, a
+    
+    ; Mezclar con nuestra semilla LFSR
     ld a, [RNGSeed]
-    ; LFSR de 8 bits (Polinomio: x^8 + x^6 + x^5 + x^4 + 1)
-    bit 7, a        ; Comprueba el bit 7 (el que va a "salir")
-    sla a           ; Desplaza toda la semilla a la izquierda
-    jr nc, .no_xor  ; Si el bit 7 era 0, salta
-    xor %00111001   ; Si era 1, aplica el XOR con los "taps"
+    xor b               ; Mezclar rDIV con la semilla
+    
+    ; Aplicar LFSR
+    bit 7, a
+    sla a
+    jr nc, .no_xor
+    xor %00111001
 .no_xor:
-    ld [RNGSeed], a ; Guarda la nueva semilla para la próxima vez
-    ret             ; Devuelve el nuevo valor en A
+    ld [RNGSeed], a
+    
+    ; Mezclar nuevamente con rDIV para más variación
+    ld a, [rDIV]
+    ld b, a             ; Cargar rDIV en B
+    ld a, [RNGSeed]     ; Cargar RNGSeed en A
+    add a, b            ; Sumar rDIV + RNGSeed
+    ret
 
+; ==============================================================================
+; SpawnFood Mejorado
+; Con mejor aleatoriedad y más intentos
+; ==============================================================================
 SpawnFood:
-    ; --- FASE 1: Intentos aleatorios (30 intentos) ---
-    ld b, 30            ; Contador de intentos aleatorios
+    ; --- FASE 1: Intentos aleatorios (más intentos) ---
+    ld b, 60            ; Aumentamos a 60 intentos
     
 .random_loop:
-    ; Generar coordenada X (rango 1-18)
-    call GetRandomByte
+    ; Generar coordenada X usando el nuevo generador
+    call GetEnhancedRandom
     and %00011111       ; 0-31
     cp 18
     jr nc, .random_loop  ; Si >= 18, reintentar
     inc a               ; Ahora A está en rango 1-18
     ld c, a             ; C = X candidato
-    .random_loop_2
-    ; Generar coordenada Y (rango 1-14)
-    call GetRandomByte
+    
+.random_loop_y:
+    ; Generar coordenada Y con llamada separada para más variación
+    call GetEnhancedRandom  
     and %00001111       ; 0-15
     cp 14
-    jr nc, .random_loop_2  ; Si >= 14, reintentar solo la Y
+    jr nc, .random_loop_y  ; Si >= 14, reintentar solo la Y
     inc a               ; Ahora A está en rango 1-14
     ld b, a             ; B = Y candidato
     
@@ -630,40 +647,65 @@ SpawnFood:
     call DrawTileAt
     ret
 
-; --- FASE 2: Búsqueda exhaustiva CORREGIDA ---
+; --- FASE 2: Búsqueda exhaustiva con inicio aleatorio ---
 .exhaustive_search:
-    ld d, 1             ; D = Y (1-14)
+    ; Empezar desde una posición aleatoria en lugar de siempre (1,1)
+    call GetEnhancedRandom
+    and %00001111       ; 0-15
+    cp 14
+    jr nc, .exhaustive_search ; Asegurar rango válido
+    inc a               ; 1-14
+    ld d, a             ; D = Y inicial
     
-.loop_y:
-    ld a, d
-    cp 15               ; ¿Y >= 15?
-    jr nc, .no_space    ; Si sí, no hay espacio
+    ld e, 1             ; E = X inicial
+    ld b, 14            ; Contador de filas (14 filas totales)
     
-    ld e, 1             ; E = X (1-18)
+.row_loop:
+    ld c, 18            ; Contador de columnas (18 columnas)
     
-.loop_x:
-    ld a, e
-    cp 19               ; ¿X >= 19?
-    jr nc, .next_row    ; Si sí, siguiente fila
-    
+.column_loop:
     ; Verificar posición (D=Y, E=X)
+    push bc
     push de
     ld b, d             ; B = Y para CheckTileAt
     ld c, e             ; C = X para CheckTileAt
     call CheckTileAt
     pop de
+    pop bc
     cp TILE_EMPTY
     jr z, .found_exhaustive   ; ¡Encontrado!
     
-    inc e               ; Siguiente X
-    jr .loop_x
+    ; Siguiente columna
+    inc e
+    ld a, e
+    cp 19               ; ¿Llegamos al final de la fila?
+    jr nz, .next_column
+    
+    ; Volver al inicio de la fila
+    ld e, 1
+    
+.next_column:
+    dec c
+    jr nz, .column_loop ; Continuar con la misma fila
+    
+    ; Siguiente fila (con wrap-around)
+    inc d
+    ld a, d
+    cp 15               ; ¿Llegamos al final?
+    jr nz, .next_row
+    
+    ; Volver a la primera fila
+    ld d, 1
     
 .next_row:
-    inc d               ; Siguiente Y
-    jr .loop_y
+    dec b
+    jr nz, .row_loop
+
+    ; Si llegamos aquí, realmente no hay espacio
+    jr .no_space
 
 .found_exhaustive:
-    ; Guardar coordenadas encontradas en búsqueda exhaustiva
+    ; Guardar coordenadas encontradas
     ld a, e
     ld [FoodX], a
     ld a, d  
@@ -671,14 +713,13 @@ SpawnFood:
     
     ; Dibujar la fruta
     ld a, TILE_FRUIT
-    ld b, d             ; Y coordenada
-    ld c, e             ; X coordenada  
+    ld b, d
+    ld c, e  
     call DrawTileAt
     ret
 
 .no_space:
     ; No hay espacio libre - podrías manejar esto como game over
-    ; o simplemente no spawnear comida (el juego se congela)
     ret
 
 ; ==============================================================================
