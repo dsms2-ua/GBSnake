@@ -24,4 +24,9 @@ ge_init::
 	set 1, [hl]
 	set 5, [hl]
 
+	;; Iniciamos variables
+	ld hl, MenuOption
+	ld a, 4
+	ld [hl], a
+
 	ret
