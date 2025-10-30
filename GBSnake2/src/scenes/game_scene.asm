@@ -21,6 +21,10 @@ FoodX:          ds 1
 FoodY:          ds 1
 SnakeLength:    ds 1
 SnakeDirection: ds 1
+TempX:          ds 1  
+TempY:          ds 1  
+TempX2:         ds 1  
+TempY2:         ds 1
 SnakeCoordsX:   ds SNAKE_MAX_LENGTH
 SnakeCoordsY:   ds SNAKE_MAX_LENGTH
 RNGSeed:        ds 1

@@ -113,13 +113,11 @@ ReadJoypad:
     ret
 
 MoveSnake:
-    ; --- PASO 1: Borrar la cola de la pantalla (Sin cambios) ---
+    ; --- PASO 1: Borrar la cola de la pantalla ---
     ld a, [SnakeLength]
     dec a
     ld b, 0
     ld c, a
-
-    
     ld hl, SnakeCoordsX
     add hl, bc
     ld e, [hl]
@@ -132,12 +130,9 @@ MoveSnake:
     call DrawTileAt
 
     ; --- PASO 2: Redibujar el "cuello" (la antigua cabeza) ---
-    ; Antes de mover los datos, calculamos qué tile de cuerpo o esquina
-    ; debe ir en la posición que la cabeza está a punto de dejar.
     call UpdateNeckTile
 
-    ; --- PASO 3: Mover los datos del cuerpo en la memoria (Sin cambios) ---
-    ; (Tu código de bucles .move_x_loop y .move_y_loop va aquí)
+    ; --- PASO 3: Mover los datos del cuerpo en la memoria ---
     ld a, [SnakeLength]
     dec a
     ld b, 0
@@ -156,7 +151,7 @@ MoveSnake:
     ld a, b
     or c
     jr nz, .move_x_loop
-    ; ... y lo mismo para las coordenadas Y ...
+
     ld a, [SnakeLength]
     dec a
     ld b, 0
@@ -175,6 +170,85 @@ MoveSnake:
     ld a, b
     or c
     jr nz, .move_y_loop
+
+    ; --- PASO 3.5: Dibujar la NUEVA cola con el tile correcto ---
+    ld a, [SnakeLength]
+    cp 1
+    jr z, .skip_tail    ; Si solo hay cabeza, no dibujar cola
+    
+    dec a
+    ld b, 0
+    ld c, a
+    
+    ; Leer coordenadas de la cola
+    ld hl, SnakeCoordsX
+    add hl, bc
+    ld a, [hl]
+    ld [TempX], a       ; Guardar X cola en variable temporal
+    
+    ld hl, SnakeCoordsY
+    add hl, bc
+    ld a, [hl]
+    ld [TempY], a       ; Guardar Y cola en variable temporal
+    
+    ; Leer coordenadas del penúltimo
+    dec c
+    ld hl, SnakeCoordsX
+    add hl, bc
+    ld a, [hl]
+    ld [TempX2], a      ; Guardar X penúltimo
+    
+    ld hl, SnakeCoordsY
+    add hl, bc
+    ld a, [hl]
+    ld [TempY2], a      ; Guardar Y penúltimo
+    
+    ; Calcular delta X
+    ld a, [TempX2]      ; X penúltimo
+    ld b, a
+    ld a, [TempX]       ; X cola
+    sub b               ; A = X cola - X penúltimo
+    
+    cp $FF              ; -1 (penúltimo a la izquierda)
+    jr z, .tail_right
+    
+    cp 1                ; +1 (penúltimo a la derecha)
+    jr z, .tail_left
+    
+    ; Es vertical, calcular delta Y
+    ld a, [TempY2]      ; Y penúltimo
+    ld b, a
+    ld a, [TempY]       ; Y cola
+    sub b               ; A = Y cola - Y penúltimo
+    
+    cp $FF              ; -1 (penúltimo arriba)
+    jr z, .tail_down
+    
+    ; +1 (penúltimo abajo)
+    ld a, TILE_TAIL_U
+    jr .draw_tail
+
+.tail_down:
+    ld a, TILE_TAIL_D
+    jr .draw_tail
+
+.tail_left:
+    ld a, TILE_TAIL_L
+    jr .draw_tail
+
+.tail_right:
+    ld a, TILE_TAIL_R
+
+.draw_tail:
+    push af
+    ld a, [TempX]
+    ld c, a
+    ld a, [TempY]
+    ld b, a
+    pop af
+    call DrawTileAt
+
+.skip_tail:
 
     ; --- PASO 4: Actualizar la posición y dibujar la nueva cabeza ---
     ld hl, SnakeCoordsX
@@ -202,12 +276,8 @@ MoveSnake:
     inc [hl] ; DERECHA
 
 .head_updated_move:
-    ; Comprobamos si la nueva posición de la cabeza choca
-    ; con algo antes de dibujarla.
     call CheckAllCollisions
-    jr c, .collision_happened ; Si Carry = 1 (colisión), saltamos a GameOver
-
-    ; Si no hay colisión (Carry = 0), continuamos dibujando la cabeza...
+    jr c, .collision_happened
 
     ld a, [SnakeDirection]
     cp 0
@@ -235,12 +305,10 @@ MoveSnake:
     ld b, a
     pop af
     call DrawTileAt
-
     ret
 
 .collision_happened:
-    ; Si hemos llegado aquí, hubo una colisión.
-    jp GameOver ; Saltamos a la rutina de fin de juego
+    jp GameOver
 
 UpdateNeckTile:
     ; Esta rutina determina qué tile de cuerpo/esquina poner en la posición
