@@ -27,7 +27,6 @@ SnakeCoordsYCaos:   ds SNAKE_MAX_LENGTH
 RNGSeedCaos:        ds 1
 AliveCaos::         ds 1
 ControlsInvertedCaos:: ds 1  ; 0 = normales, 1 = invertidos
-ScoreCaos::         ds 2      ; Score de 16 bits (2 bytes)
 PoisonTimerCaos:    ds 1  ; Contador para que desaparezca el veneno (~5 segundos)
 
 ; =============================================
@@ -90,6 +89,7 @@ game_init_caos::
 
     ;; Cargamos la puntuacion maxima y la dibujamos
     call load_high_score
+    call draw_high_score
 
     ;; Configuramos el LCDC para mostrar el mapa 1
     ld a, %10010011

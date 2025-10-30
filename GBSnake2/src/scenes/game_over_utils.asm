@@ -27,7 +27,7 @@ draw_game_over::
 
 draw_game_over_options::
 	ld hl, TextScore
-	ld de, $9925
+	ld de, $9905
 	ld bc, TextScoreEnd - TextScore
 	call copy_vram
 
@@ -86,7 +86,7 @@ draw_score::
     add a, $9B
     ld d, a
 
-    ld hl, $992B
+    ld hl, $990B
 
     di
     call WaitVRAMSafe
@@ -151,6 +151,9 @@ game_over_wait_option::
 	jr z, .exit
 
 	set 1, [hl] ;; Ponemos el segundo bit en activo si es menu
+    ld hl, MenuOption
+    ld a, 4
+    ld [hl], a
 .exit
 	ret
 
@@ -177,14 +180,14 @@ clean_game_over_pantalla::
 
 
 	;; --------------
-	ld hl, $9925
+	ld hl, $9905
 	ld b, 9
 	ld a, $00
 	call memset_256
 
 	ld hl, $9944
-	ld b, 9
-	ld a, $11
+	ld b, 11
+	ld a, $00
 	call memset_256
 
 	ld hl, $99A5

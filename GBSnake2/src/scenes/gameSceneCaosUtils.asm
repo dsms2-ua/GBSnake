@@ -681,13 +681,13 @@ RandomizeSpeed:
     ret
 
 ScoreInitCaos:
-    ld hl, ScoreCaos
+    ld hl, Score
     xor a
     ld [hl], a
     ret
 
 IncScoreCaos:
-    ld hl, ScoreCaos
+    ld hl, Score
     ld a, [hl]
     inc a
     ld [hl], a

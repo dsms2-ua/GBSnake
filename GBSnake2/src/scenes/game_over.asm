@@ -52,11 +52,11 @@ game_over_init::
     ld a, GAME_OVER_DELAY_FRAMES
     ld [GameOverDelay], a
 
-    ;; Comprobamos si tenemos un nuevo récord
-    call save_high_score
-
     ;; Pintamos el score
     call draw_score
+
+    ;; Comprobamos si tenemos un nuevo récord
+    call save_high_score
 
     call enciende_pantalla
 
