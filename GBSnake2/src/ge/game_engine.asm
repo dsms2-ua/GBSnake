@@ -1,9 +1,9 @@
 INCLUDE "constants.inc"
 
 SECTION "Game Variables", WRAM0
-JoyPadState:: 	DS 1
-Score::			DS 1
-HighScore::		DS 1
+JoyPadState:: 			DS 1
+Score::					DS 1
+HighScores::			DS 2
 
 SECTION "Game Engine Code", ROM0
 

@@ -2,7 +2,7 @@ INCLUDE "constants.inc"
 
 SECTION "Menu Variables", WRAM0
 
-MenuOption::    DS 1
+MenuOption::    DS 1 ;; 0 para Classic, 1 para Chaos y 2 para Exit
 MenuDelay::     DS 1
 
 SECTION "Menu Code", ROM0

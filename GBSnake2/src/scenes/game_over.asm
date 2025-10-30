@@ -31,6 +31,10 @@ TextMenu::
     DB $86, $8E, $00, $8C, $84, $8D, $94, $00, $A7, $92, $93, $80, $91, $93, $A8
 TextMenuEnd::
 
+TextNewRecord::
+    DB $8D, $84, $96, $00, $91, $84, $82, $8E, $91, $83, $A5
+TextNewRecordEnd::
+
 
 game_over_init::
     ;; La pantalla está apagada
@@ -47,6 +51,12 @@ game_over_init::
 
     ld a, GAME_OVER_DELAY_FRAMES
     ld [GameOverDelay], a
+
+    ;; Comprobamos si tenemos un nuevo récord
+    call save_high_score
+
+    ;; Pintamos el score
+    call draw_score
 
     call enciende_pantalla
 

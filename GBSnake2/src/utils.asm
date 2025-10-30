@@ -166,34 +166,83 @@ enable_sram::
 	ld [$0000], a
 	ret
 
-disabel_sram::
+disable_sram::
 	ld a, $00
 	ld [$0000], a
 	ret 
 
-save_high_score::
-	ld a, [Score]
-	ld b, a
-	ld a, [HighScore]
-	cp b
-	;; Comprobamos si tenemos nuevo record
-	jr nc, .no_new_highscore
-
-	ld a, b
-	ld [HighScore], a
-
-	call enable_sram
-	ld hl, $A000
-	ld [hl], a
-	call disabel_sram
-
-.no_new_highscore
-	ret
-
 load_high_score::
 	call enable_sram
+
+	;; Comparamos si el número mágico está en la primera posición
 	ld hl, $A000
 	ld a, [hl]
-	call disabel_sram
-	ld [HighScore], a
+	cp $42
+	jr z, .load_valid_data
+
+.initialize_ram
+	;; Si es la primera vez o los datos están corruptos
+	xor a
+	ld [HighScores], a
+	ld [HighScores + 1], a
+
+	;; Guardamos los valores en SRAM para la próxima vez
+	ld hl, $A000
+	ld a, $42
+	ld [hl+], a
+	xor a
+	ld [hl+], a
+	ld [hl], a
+	jr .done
+
+.load_valid_data
+	inc hl
+	ld a, [hl]
+	ld [HighScores], a
+
+	inc hl
+	ld a, [hl]
+	ld [HighScores + 1], a
+
+.done
+	call disable_sram
+	ret
+
+save_high_score::
+	ld a, [MenuOption]
+	ld c, a ;; Guardamos en c la opción de juego	
+
+	ld b, 0
+	ld hl, HighScores
+	add hl, bc
+	ld a, [hl]
+
+	;; Comparamos con el score actual
+	ld b, a
+	ld a, [Score]
+	cp b
+	
+	;; Si no es estrictamente mayor, no hago nada
+	ret c
+	ret z
+
+	ld b, a
+
+	;; Actualizamos la variable en WRAM
+	ld [hl], a
+
+	;; Ahora en SRAM
+	call enable_sram
+
+	;; Guardamos el número mágico para comprobar la validez de los datos
+	ld hl, $A000
+	ld a, $42
+	ld [hl+], a
+
+	ld a, [HighScores]
+	ld [hl+], a
+	ld a, [HighScores + 1]
+	ld [hl], a
+	call disable_sram
+
 	ret

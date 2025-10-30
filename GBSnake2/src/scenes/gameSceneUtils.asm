@@ -767,6 +767,69 @@ DrawScore::
     
     ret
 
+draw_high_score::
+    ;; Leemos el modo de juego
+    ld a, [MenuOption]
+    ld c, a
+    ld b, 0
+
+    ld hl, HighScores
+    add hl, bc
+    ld a, [hl]
+
+    ;; Convertimos el número a tiles
+    ld l, a
+    ld h, 0
+
+.calc_cent
+    ld b, 0
+.cent_loop
+    ld a, l
+    cp 100
+    jr c, .calc_dec
+    sub 100
+    ld l, a
+    inc b
+    jr .cent_loop
+
+.calc_dec
+    ld c, 0
+.dec_loop
+    ld a, l
+    cp 10
+    jr c, .draw
+    sub 10
+    ld l, a
+    inc c
+    jr .dec_loop
+
+.draw
+    ld d, l
+    ld a, b
+    add a, $9B ;; $9B es la posición del 0 en tiles
+    ld b, a
+    ld a, c
+    add a, $9B
+    ld c, a
+    ld a, d
+    add a, $9B
+    ld d, a
+
+    ld hl, $9A2A
+
+    di
+    call WaitVRAMSafe
+    ld [hl], b
+    inc hl
+    call WaitVRAMSafe
+    ld [hl], c
+    inc hl
+    call WaitVRAMSafe
+    ld [hl], d
+    ei
+
+    ret
+
 ; ==============================================================================
 ; WaitVRAMSafe
 ; Espera hasta que sea seguro escribir en VRAM (Modo 0 o 1)
