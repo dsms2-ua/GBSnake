@@ -118,6 +118,8 @@ MoveSnake:
     dec a
     ld b, 0
     ld c, a
+
+    
     ld hl, SnakeCoordsX
     add hl, bc
     ld e, [hl]

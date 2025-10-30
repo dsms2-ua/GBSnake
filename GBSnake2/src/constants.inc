@@ -72,6 +72,12 @@ DEF TILE_CORNER_DR  EQU $09 ; Abajo-Derecha
 DEF TILE_CORNER_DL  EQU $0A ; Abajo-Izquierda
 DEF TILE_CORNER_LU  EQU $0B ; Izquierda-Arriba
 
+; Tiles de cola
+DEF TILE_TAIL_U EQU $0C
+DEF TILE_TAIL_R EQU $0D
+DEFT ILE_TAIL_D EQU $0E
+DEF TILE_TAIL_L EQU $0F
+
 DEF TILE_FRUIT      		equ $11
 DEF TILE_POISON             EQU $10 
 DEF TILE_WALL       		equ 4
