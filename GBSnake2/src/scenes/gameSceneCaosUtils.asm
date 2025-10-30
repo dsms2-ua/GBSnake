@@ -197,6 +197,85 @@ MoveSnakeCaos:
     or c
     jr nz, .move_y_loop
 
+    ; --- PASO 3.5: Dibujar la NUEVA cola con el tile correcto ---
+    ld a, [SnakeLengthCaos]
+    cp 1
+    jr z, .skip_tail    ; Si solo hay cabeza, no dibujar cola
+    
+    dec a
+    ld b, 0
+    ld c, a
+    
+    ; Leer coordenadas de la cola
+    ld hl, SnakeCoordsXCaos
+    add hl, bc
+    ld a, [hl]
+    ld [TempX], a       ; Guardar X cola en variable temporal
+    
+    ld hl, SnakeCoordsYCaos
+    add hl, bc
+    ld a, [hl]
+    ld [TempY], a       ; Guardar Y cola en variable temporal
+    
+    ; Leer coordenadas del penúltimo
+    dec c
+    ld hl, SnakeCoordsXCaos
+    add hl, bc
+    ld a, [hl]
+    ld [TempX2], a      ; Guardar X penúltimo
+    
+    ld hl, SnakeCoordsYCaos
+    add hl, bc
+    ld a, [hl]
+    ld [TempY2], a      ; Guardar Y penúltimo
+    
+    ; Calcular delta X
+    ld a, [TempX2]      ; X penúltimo
+    ld b, a
+    ld a, [TempX]       ; X cola
+    sub b               ; A = X cola - X penúltimo
+    
+    cp $FF              ; -1 (penúltimo a la izquierda)
+    jr z, .tail_right
+    
+    cp 1                ; +1 (penúltimo a la derecha)
+    jr z, .tail_left
+    
+    ; Es vertical, calcular delta Y
+    ld a, [TempY2]      ; Y penúltimo
+    ld b, a
+    ld a, [TempY]       ; Y cola
+    sub b               ; A = Y cola - Y penúltimo
+    
+    cp $FF              ; -1 (penúltimo arriba)
+    jr z, .tail_down
+    
+    ; +1 (penúltimo abajo)
+    ld a, TILE_TAIL_U
+    jr .draw_tail
+
+.tail_down:
+    ld a, TILE_TAIL_D
+    jr .draw_tail
+
+.tail_left:
+    ld a, TILE_TAIL_L
+    jr .draw_tail
+
+.tail_right:
+    ld a, TILE_TAIL_R
+
+.draw_tail:
+    push af
+    ld a, [TempX]
+    ld c, a
+    ld a, [TempY]
+    ld b, a
+    pop af
+    call DrawTileAt
+
+.skip_tail:
+
     ; --- PASO 4: Actualizar la posición y dibujar la nueva cabeza ---
     ld hl, SnakeCoordsXCaos
     ld de, SnakeCoordsYCaos
@@ -429,13 +508,24 @@ SeedRandomCaos:
     ret
 
 GetRandomByteCaos:
-    ld a, [RNGSeedCaos]
-    bit 7, a
+    ld hl, RNGSeedCaos
+    ld a, [hl]
+    
+    ; Mezclar bits de manera más efectiva
     sla a
-    jr nc, .no_xor
-    xor %00111001
-.no_xor:
-    ld [RNGSeedCaos], a
+    jr nc, .no_xor1
+    xor %10101101
+.no_xor1:
+    
+    ; Segunda operación para mejor aleatoriedad
+    rrca
+    rrca
+    xor [hl]
+    
+    ; Tercera operación
+    add a, 37           ; Número primo para mejor distribución
+    
+    ld [hl], a
     ret
 
 SpawnFoodCaos:
