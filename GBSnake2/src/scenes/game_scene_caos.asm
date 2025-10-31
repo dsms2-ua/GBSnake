@@ -44,6 +44,8 @@ game_init_caos::
     ; 1. Preparamos nuestras variables
     call InitializeSnakeDataCaos
     call SeedRandomCaos
+    xor a
+	ld [GameFinish], a
     
     ; Inicializar controles normales
     xor a

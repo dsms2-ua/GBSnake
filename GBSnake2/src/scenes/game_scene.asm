@@ -50,6 +50,8 @@ game_init::
 	; 1. Preparamos nuestras variables
     call InitializeSnakeData
 	call SeedRandom
+	xor a
+	ld [GameFinish], a
 
     ; 2. Dibujamos la serpiente inicial sobre el mapa ya cargado
 	ld a, [SnakeCoordsX]

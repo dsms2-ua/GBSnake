@@ -46,7 +46,7 @@ intro_init::
 	;; Load logo tiles
 	ld hl, logo_assets
 	ld de, $8400
-	ld bc, 44*VRAM_TILE_SIZE
+	ld bc, 56*VRAM_TILE_SIZE
 	call copy_vram
 
 	call init_sprites_intro

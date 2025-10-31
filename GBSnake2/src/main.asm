@@ -39,21 +39,19 @@ main::
    call game_run
    call game_clean
 
-   jp .game_over
+   jp .game_finish
 
 .run_game_caos
    call game_init_caos
    call game_run_caos
    call game_clean_caos
 
-   jp .game_over
+   jp .game_finish
 
-.game_over
-   call game_over_init
-   call game_over_run
-   call game_over_clean
-
-   
+.game_finish
+   call game_finish_init
+   call game_finish_run
+   call game_finish_clean
 
    jp .game_loop
 
