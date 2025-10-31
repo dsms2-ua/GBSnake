@@ -801,14 +801,14 @@ ocultar_veneno::
 
 
 RandomizeSpeed:
-    ; Generar velocidad aleatoria entre 6 y 14
+    ; Generar velocidad aleatoria entre 3 y 8
     call GetRandomByteCaos
-    and %00001111       ; 0-15
-    cp 9
+    and %00000111       ; 0-7
+    cp 6
     jr c, .valid_speed
-    sub 9               ; Si >= 9, restamos para estar en rango
+    sub 6               ; Si >= 6, restamos para estar en rango
 .valid_speed:
-    add a, 6            ; Ahora está en rango 6-14
+    add a, 3            ; Ahora está en rango 3-8
     ld [MovementDelayCaos], a
     ret
 
