@@ -115,6 +115,11 @@ game_run::
 	bit 0, a
 	jr z, .exit_loop
 
+	;; Comprobamos si hemos llegado al límite de tamaño
+    ld a, [SnakeLength]
+    cp SNAKE_MAX_LENGTH
+    jr z, .game_win
+
     call ReadJoypad
 
     ; Lógica del contador de frames para ralentizar
@@ -132,6 +137,10 @@ game_run::
     call CheckForFood
 
 	jp .game_loop
+
+.game_win
+    ld a, 1
+    ld [GameFinish], a
 
 .exit_loop
 	ret

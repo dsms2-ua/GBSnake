@@ -42,7 +42,7 @@ DEF CMP_SPRITES_H			equ $0C
 DEF MENU_MAX_OPTIONS         equ 3
 DEF MENU_DELAY_FRAMES       equ 10
 DEF GAME_OVER_DELAY_FRAMES  equ 10
-DEF SNAKE_MAX_LENGTH    	equ 4       ; Longitud máxima de la serpiente
+DEF SNAKE_MAX_LENGTH    	equ 252       ; Longitud máxima de la serpiente
 DEF VRAM_TILE_SIZE          equ $10     ; Tamaño de cada tile en bytes
 DEF INITIAL_LENGTH      	equ 3       ; Longitud inicial de la serpiente
 DEF FRAME_DELAY         	equ 16       ; Frames de delay entre movimientos

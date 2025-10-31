@@ -112,6 +112,11 @@ game_run_caos::
     bit 0, a
     jr z, .exit_loop
 
+    ;; Comprobamos si hemos llegado al límite de tamaño
+    ld a, [SnakeLengthCaos]
+    cp SNAKE_MAX_LENGTH
+    jr z, .game_win
+
     call ReadJoypadCaos
     call UpdatePoisonTimer
     ; Lógica del contador de frames para ralentizar
@@ -131,6 +136,10 @@ game_run_caos::
     call CheckForPoisonCaos
 
     jp .game_loop
+
+.game_win
+    ld a, 1
+    ld [GameFinish], a
 
 .exit_loop
     ret
