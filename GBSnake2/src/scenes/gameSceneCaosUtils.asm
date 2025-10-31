@@ -758,6 +758,48 @@ CheckForPoisonCaos:
     
     ret
 
+
+mostrar_veneno::
+    call wait_vblank_start
+    ld hl, $9A0F
+    ld a, $A9
+    ld [hl], a
+
+    inc hl
+    ld a, $AC
+    ld [hl], a
+
+    ld hl, $9A2F
+    ld a, $AA
+    ld [hl], a
+    
+    inc hl
+    ld a, $AB
+    ld [hl], a
+
+    ret
+
+ocultar_veneno::
+    call wait_vblank_start
+    ld hl, $9A0F
+    ld a, $00
+    ld [hl], a
+
+    inc hl
+    ld a, $00
+    ld [hl], a
+
+    ld hl, $9A2F
+    ld a, $00
+    ld [hl], a
+    
+    inc hl
+    ld a, $00
+    ld [hl], a
+
+    ret
+
+
 RandomizeSpeed:
     ; Generar velocidad aleatoria entre 6 y 14
     call GetRandomByteCaos

@@ -119,6 +119,7 @@ game_run_caos::
 
     call ReadJoypadCaos
     call UpdatePoisonTimer
+
     ; Lógica del contador de frames para ralentizar
     ld a, [FrameCounterCaos]
     dec a
@@ -135,6 +136,18 @@ game_run_caos::
     call CheckForFoodCaos
     call CheckForPoisonCaos
 
+    ;; Comprobamos la velocidad y el veneno
+    ld a, [ControlsInvertedCaos]
+    cp 0
+    jr z, .no_poison
+
+    call mostrar_veneno
+    jp .fin
+
+.no_poison
+    call ocultar_veneno
+
+.fin
     jp .game_loop
 
 .game_win

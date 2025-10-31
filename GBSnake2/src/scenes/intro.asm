@@ -40,7 +40,7 @@ intro_init::
 	;; Load letters and numbers tiles
 	ld hl, abecedario
 	ld de, VRAM_FONT_DATA_START ;; $8800
-	ld bc, 41*VRAM_TILE_SIZE
+	ld bc, 47*VRAM_TILE_SIZE
 	call copy_vram
 
 	;; Load logo tiles
